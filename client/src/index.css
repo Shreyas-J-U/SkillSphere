@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 min-h-screen text-white;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Glassmorphism Card */
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-glass;
+  }
+
+  .glass-dark {
+    @apply bg-black/20 backdrop-blur-md border border-white/10 shadow-glass;
+  }
+
+  /* Button Styles */
+  .btn {
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-primary text-white shadow-lg hover:shadow-glow;
+  }
+
+  .btn-secondary {
+    @apply bg-gradient-secondary text-white shadow-lg hover:shadow-xl;
+  }
+
+  .btn-outline {
+    @apply border-2 border-white/30 text-white hover:bg-white/10;
+  }
+
+  .btn-success {
+    @apply bg-success text-white shadow-lg hover:shadow-xl;
+  }
+
+  .btn-danger {
+    @apply bg-danger text-white shadow-lg hover:shadow-xl;
+  }
+
+  /* Input Styles */
+  .input {
+    @apply w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all backdrop-blur-sm;
+  }
+
+  /* Card Styles */
+  .card {
+    @apply glass rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl;
+  }
+
+  .card-hover {
+    @apply card hover:transform hover:-translate-y-2;
+  }
+
+  /* Badge Styles */
+  .badge {
+    @apply px-3 py-1 rounded-full text-sm font-medium inline-block;
+  }
+
+  .badge-primary {
+    @apply bg-primary/20 text-primary-light border border-primary/30;
+  }
+
+  .badge-secondary {
+    @apply bg-secondary/20 text-secondary border border-secondary/30;
+  }
+
+  .badge-success {
+    @apply bg-success/20 text-success border border-success/30;
+  }
+
+  .badge-danger {
+    @apply bg-danger/20 text-danger border border-danger/30;
+  }
+
+  .badge-warning {
+    @apply bg-warning/20 text-warning border border-warning/30;
+  }
+
+  /* Skill Tag */
+  .skill-tag {
+    @apply px-4 py-2 rounded-full bg-gradient-primary text-white text-sm font-medium shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105;
+  }
+
+  /* Scrollbar Styles */
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-white/5 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-white/20 rounded-full hover:bg-white/30;
+  }
+
+  /* Loading Spinner */
+  .spinner {
+    @apply animate-spin rounded-full border-4 border-white/20 border-t-white;
+  }
+
+  /* Gradient Text */
+  .gradient-text {
+    @apply bg-gradient-primary bg-clip-text text-transparent;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .text-shadow-lg {
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+
+  @keyframes gradient {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+}
+
+/* Floating animation for landing page */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+  66% {
+    transform: translateY(20px) rotate(-5deg);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
