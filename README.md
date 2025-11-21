@@ -3,7 +3,7 @@
 ![SkillSphere](https://img.shields.io/badge/SkillSphere-v1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-**SkillSphere** is a full-stack MERN application that enables users to exchange skills without monetary involvement. Connect with learners, barter your expertise, and grow together!
+**SkillSphere** connects people who want to learn with people who love to teach. It's a community-driven platform where your skills are your currency. Whether you're a developer wanting to learn Spanish or a designer looking to master Python, SkillSphere helps you find the perfect partner. With built-in video scheduling, chat, and a trusted rating system, exchanging knowledge has never been easier or more secure
 
 ## ✨ Features
 
