@@ -196,23 +196,41 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
               >
                 <MessageSquare size={18} />
-                Open Chat
+                Chat
                 {request.unreadCount > 0 && (
                   <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
                     {request.unreadCount}
                   </span>
                 )}
               </motion.button>
-              <motion.button
-                onClick={handleCompleteRequest}
-                disabled={completing}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <CheckCircle size={18} />
-                {completing ? 'Completing...' : 'Complete'}
-              </motion.button>
+              
+              {/* Completion Logic */}
+              {(() => {
+                const hasCompleted = isSender ? request.senderCompleted : request.receiverCompleted;
+                const partnerCompleted = isSender ? request.receiverCompleted : request.senderCompleted;
+
+                if (hasCompleted) {
+                  return (
+                    <div className="px-6 py-3 bg-yellow-100 text-yellow-700 rounded-xl font-semibold flex items-center justify-center gap-2 border border-yellow-200">
+                      <Clock size={18} />
+                      Waiting for partner
+                    </div>
+                  );
+                }
+
+                return (
+                  <motion.button
+                    onClick={handleCompleteRequest}
+                    disabled={completing}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <CheckCircle size={18} />
+                    {completing ? 'Marking...' : 'Mark Complete'}
+                  </motion.button>
+                );
+              })()}
             </>
           )}
 
