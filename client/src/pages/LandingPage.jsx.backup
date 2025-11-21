@@ -1,0 +1,661 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight, Users, MessageCircle, Monitor, Zap, Target, Eye, Star, Check, Play, TrendingUp, Award, Clock, Globe } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+
+export default function LandingPage() {
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const heroRef = useRef(null);
+  const statsRef = useRef(null);
+  const aboutRef = useRef(null);
+  const missionRef = useRef(null);
+  const featuresRef = useRef(null);
+  const reviewsRef = useRef(null);
+  const [isVisible, setIsVisible] = useState({});
+
+  useEffect(() => {
+    // Setting up Intersection Observer for scroll-based animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setIsVisible(prev => ({ ...prev, [entry.target.id]: true }));
+        }
+      });
+    }, observerOptions);
+
+    // Attach observer to all refs except heroRef (which is visible on load)
+    [statsRef, aboutRef, missionRef, featuresRef, reviewsRef].forEach(ref => {
+      if (ref.current) {
+        observer.observe(ref.current);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const handleGetStarted = () => {
+    navigate('/register');
+  };
+
+  const handleSignIn = () => {
+    navigate('/login');
+  };
+
+  const handleDashboard = () => {
+    navigate('/dashboard');
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200/50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <Zap className="text-white" size={24} />
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                SkillSphere
+              </span>
+            </div>
+            <div className="hidden md:flex items-center space-x-8">
+              <a href="#features" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Features</a>
+              <a href="#about" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">About</a>
+              <a href="#reviews" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Reviews</a>
+            </div>
+            <div className="flex items-center space-x-4">
+              {isAuthenticated ? (
+                <button onClick={handleDashboard} className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 font-medium">
+                  Go to Dashboard
+                </button>
+              ) : (
+                <>
+                  <button onClick={handleSignIn} className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                    Sign In
+                  </button>
+                  <button onClick={handleGetStarted} className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 font-medium">
+                    Get Started
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section ref={heroRef} className="pt-32 pb-20 px-6 relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-indigo-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8 animate-fade-in">
+              <div className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-100 rounded-full text-blue-700 font-medium">
+                <Zap size={16} />
+                <span>Welcome to the Future of Learning</span>
+              </div>
+              
+              <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 leading-tight">
+                Trade Skills,
+                <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Transform Lives
+                </span>
+              </h1>
+              
+              <p className="text-xl text-gray-600 leading-relaxed">
+                Join thousands of learners in the world's most innovative skill-sharing platform. 
+                Exchange knowledge, build connections, and unlock your potential through collaborative learning.
+              </p>
+              
+              <div className="flex flex-wrap gap-4">
+                {isAuthenticated ? (
+                  <>
+                    <button onClick={handleDashboard} className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all duration-300 flex items-center space-x-2">
+                      <span>Go to Dashboard</span>
+                      <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+                    </button>
+                    <button onClick={() => navigate('/skills')} className="px-8 py-4 bg-white text-gray-700 rounded-xl font-semibold hover:shadow-xl transition-all duration-300 border-2 border-gray-200">
+                      Explore Skills
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={handleGetStarted} className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all duration-300 flex items-center space-x-2">
+                      <span>Start Your Journey</span>
+                      <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+                    </button>
+                    <button onClick={handleSignIn} className="px-8 py-4 bg-white text-gray-700 rounded-xl font-semibold hover:shadow-xl transition-all duration-300 border-2 border-gray-200">
+                      Sign In
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="flex items-center space-x-8 pt-4">
+                <div className="flex -space-x-3">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 border-4 border-white flex items-center justify-center text-white font-bold">
+                      {String.fromCharCode(64 + i)}
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <div className="flex items-center space-x-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">Trusted by 10,000+ learners</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-6 animate-float">
+                  <div className="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100">
+                    <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4">
+                      <Users className="text-white" size={28} />
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-2">Connect with Peers</h3>
+                    <p className="text-gray-600 text-sm">Build meaningful connections</p>
+                  </div>
+                  
+                  <div className="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100">
+                    <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4">
+                      <Monitor className="text-white" size={28} />
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-2">Live Sessions</h3>
+                    <p className="text-gray-600 text-sm">Interactive learning experience</p>
+                  </div>
+                </div>
+
+                <div className="space-y-6 mt-12 animate-float" style={{ animationDelay: '0.5s' }}>
+                  <div className="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100">
+                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4">
+                      <MessageCircle className="text-white" size={28} />
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-2">Real-time Chat</h3>
+                    <p className="text-gray-600 text-sm">Instant communication</p>
+                  </div>
+                  
+                  <div className="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100">
+                    <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-4">
+                      <Award className="text-white" size={28} />
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-2">Earn Certificates</h3>
+                    <p className="text-gray-600 text-sm">Validate your expertise</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section ref={statsRef} id="stats" className="py-20 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className={`grid md:grid-cols-4 gap-8 transition-all duration-1000 ${isVisible.stats ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            {[
+              { number: '10K+', label: 'Active Users', icon: Users, color: 'from-blue-500 to-blue-600' },
+              { number: '500+', label: 'Skills Available', icon: TrendingUp, color: 'from-purple-500 to-purple-600' },
+              { number: '25K+', label: 'Successful Exchanges', icon: Award, color: 'from-indigo-500 to-indigo-600' },
+              { number: '98%', label: 'Satisfaction Rate', icon: Star, color: 'from-pink-500 to-pink-600' }
+            ].map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <div 
+                  key={index} 
+                  className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 text-center group"
+                  style={{ transitionDelay: `${index * 100}ms` }}
+                >
+                  <div className={`w-16 h-16 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
+                    <Icon className="text-white" size={32} />
+                  </div>
+                  <h3 className="text-4xl font-bold text-gray-900 mb-2">{stat.number}</h3>
+                  <p className="text-gray-600 font-medium">{stat.label}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section ref={aboutRef} id="about" className="py-20 px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className={`grid lg:grid-cols-2 gap-16 items-center transition-all duration-1000 ${isVisible.about ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
+            <div className="space-y-6">
+              <div className="inline-block px-4 py-2 bg-blue-100 text-blue-600 rounded-full text-sm font-semibold">
+                About Us
+              </div>
+              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900">
+                Revolutionizing How We Learn
+              </h2>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                SkillSphere is more than a platform—it's a movement. We believe everyone has something valuable 
+                to teach and something meaningful to learn. Our innovative barter system creates a collaborative 
+                ecosystem where knowledge flows freely and growth is mutual.
+              </p>
+              
+              <div className="space-y-4 pt-4">
+                {[
+                  { icon: Users, title: 'Community-Driven', desc: 'Built by learners, for learners' },
+                  { icon: Zap, title: 'Instant Connections', desc: 'Match with the right people instantly' },
+                  { icon: Globe, title: 'Global Network', desc: 'Connect with learners worldwide' }
+                ].map((feature, index) => {
+                  const Icon = feature.icon;
+                  return (
+                    <div key={index} className="flex items-start space-x-4 p-4 rounded-xl hover:bg-blue-50 transition-colors">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Icon className="text-white" size={24} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900 mb-1">{feature.title}</h4>
+                        <p className="text-gray-600">{feature.desc}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop" 
+                  alt="Team collaboration" 
+                  className="w-full h-[500px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
+              </div>
+              <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-xl">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center">
+                    <Check className="text-white" size={32} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">100%</p>
+                    <p className="text-gray-600">Success Rate</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mission & Vision */}
+      <section ref={missionRef} id="mission" className="py-20 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-block px-4 py-2 bg-purple-100 text-purple-600 rounded-full text-sm font-semibold mb-4">
+              Our Purpose
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Driving the Future of Collaborative Learning
+            </h2>
+          </div>
+
+          <div className={`grid md:grid-cols-2 gap-8 transition-all duration-1000 ${isVisible.mission ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100">
+              <div className="relative h-64">
+                <img 
+                  src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=400&fit=crop" 
+                  alt="Our Mission" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-transparent"></div>
+                <div className="absolute top-6 left-6 w-16 h-16 bg-white rounded-xl flex items-center justify-center">
+                  <Target className="text-blue-600" size={32} />
+                </div>
+              </div>
+              <div className="p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  To democratize learning by creating a global platform where knowledge is freely exchanged, 
+                  barriers are broken, and every individual can unlock their potential through meaningful skill collaboration.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100">
+              <div className="relative h-64">
+                <img 
+                  src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=400&fit=crop" 
+                  alt="Our Vision" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/80 to-transparent"></div>
+                <div className="absolute top-6 left-6 w-16 h-16 bg-white rounded-xl flex items-center justify-center">
+                  <Eye className="text-purple-600" size={32} />
+                </div>
+              </div>
+              <div className="p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  A world where learning knows no boundaries, where curiosity drives progress, and where collaborative 
+                  growth transforms communities into thriving ecosystems of shared knowledge and innovation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section ref={featuresRef} id="features" className="py-20 px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-block px-4 py-2 bg-indigo-100 text-indigo-600 rounded-full text-sm font-semibold mb-4">
+              Features
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Everything You Need for Seamless Skill Exchange
+            </h2>
+          </div>
+
+          <div className={`grid md:grid-cols-2 lg:grid-cols-2 gap-8 transition-all duration-1000 ${isVisible.features ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+            {[
+              {
+                icon: Users,
+                title: 'Barter Skill Exchange',
+                desc: 'Trade your skills with others in the community and learn something new in return. Share what you know, gain fresh knowledge, and grow together through collaboration.',
+                image: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=600&fit=crop',
+                color: 'from-blue-500 to-blue-600'
+              },
+              {
+                icon: MessageCircle,
+                title: 'Instant Communication',
+                desc: 'Connect with peers through our advanced messaging system with file sharing, voice notes, and group chats for seamless collaboration.',
+                image: 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=600&fit=crop',
+                color: 'from-purple-500 to-purple-600'
+              },
+              {
+                icon: Monitor,
+                title: 'Smart Dashboard',
+                desc: 'Track your learning journey with powerful analytics, progress reports, and smart recommendations that guide you toward your goals.',
+                image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop',
+                color: 'from-indigo-500 to-indigo-600'
+              },
+              {
+                icon: Zap,
+                title: 'Live Video Sessions',
+                desc: 'SkillSphere makes learning interactive with built-in Google Meet integration. Attend live classes, join workshops, and connect with mentors seamlessly.',
+                image: 'https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?w=800&h=600&fit=crop',
+                color: 'from-pink-500 to-pink-600'
+              }
+            ].map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div 
+                  key={index} 
+                  className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100"
+                  style={{ transitionDelay: `${index * 100}ms` }}
+                >
+                  <div className="relative h-56 overflow-hidden">
+                    <img 
+                      src={feature.image} 
+                      alt={feature.title} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent"></div>
+                    <div className={`absolute top-6 left-6 w-14 h-14 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center`}>
+                      <Icon className="text-white" size={28} />
+                    </div>
+                  </div>
+                  <div className="p-8">
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                    <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Reviews Section */}
+      <section ref={reviewsRef} id="reviews" className="py-20 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-block px-4 py-2 bg-yellow-100 text-yellow-600 rounded-full text-sm font-semibold mb-4">
+              Testimonials
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Loved by Thousands
+            </h2>
+            <p className="text-xl text-gray-600">See what our community has to say</p>
+          </div>
+
+          <div className={`grid md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-1000 ${isVisible.reviews ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            {[
+              {
+                text: "SkillSphere transformed how I learn. Trading design skills for coding knowledge was seamless and rewarding!",
+                author: "Aisha Patel",
+                role: "UI/UX Designer",
+                rating: 5
+              },
+              {
+                text: "The live sessions are incredible. I've learned more in 3 months than I did in years of traditional learning.",
+                author: "Rohan Kumar",
+                role: "Software Developer",
+                rating: 5
+              },
+              {
+                text: "Amazing platform! The community is supportive and the skill matching algorithm is spot-on.",
+                author: "Sarah Chen",
+                role: "Digital Marketer",
+                rating: 5
+              },
+              {
+                text: "I've made genuine connections while learning new skills. This platform is a game-changer!",
+                author: "Aarav Singh",
+                role: "Data Scientist",
+                rating: 5
+              },
+              {
+                text: "The dashboard keeps me organized and motivated. Highly recommend to anyone serious about learning.",
+                author: "Priya Sharma",
+                role: "Product Manager",
+                rating: 5
+              },
+              {
+                text: "SkillSphere's collaborative approach makes learning fun and effective. Best platform I've used!",
+                author: "Kabir Ali",
+                role: "Graphic Designer",
+                rating: 5
+              }
+            ].map((review, index) => (
+              <div 
+                key={index} 
+                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100"
+                style={{ transitionDelay: `${index * 50}ms` }}
+              >
+                <div className="flex items-center space-x-1 mb-4">
+                  {[...Array(review.rating)].map((_, i) => (
+                    <Star key={i} size={18} className="fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-gray-700 leading-relaxed mb-6 italic">"{review.text}"</p>
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold">
+                    {review.author[0]}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900">{review.author}</h4>
+                    <p className="text-sm text-gray-600">{review.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-6 bg-gradient-to-r from-blue-600 to-purple-600">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+            Ready to Transform Your Learning Journey?
+          </h2>
+          <p className="text-xl text-blue-100 mb-8">
+            Join thousands of learners who are already trading skills and building meaningful connections.
+          </p>
+          {isAuthenticated ? (
+            <button onClick={handleDashboard} className="px-10 py-5 bg-white text-blue-600 rounded-xl font-bold text-lg hover:shadow-2xl transition-all duration-300 hover:scale-105">
+              Go to Dashboard
+            </button>
+          ) : (
+            <button onClick={handleGetStarted} className="px-10 py-5 bg-white text-blue-600 rounded-xl font-bold text-lg hover:shadow-2xl transition-all duration-300 hover:scale-105">
+              Get Started for Free
+            </button>
+          )}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-16 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Zap className="text-white" size={24} />
+                </div>
+                <span className="text-2xl font-bold">SkillSphere</span>
+              </div>
+              <p className="text-gray-400 leading-relaxed mb-6">
+                Empowering minds through collaborative learning. Join our global community and transform your potential into expertise.
+              </p>
+              <div className="flex items-center space-x-4">
+                <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                  <span className="text-xl">📱</span>
+                </a>
+                <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                  <span className="text-xl">💼</span>
+                </a>
+                <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                  <span className="text-xl">🐙</span>
+                </a>
+                <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                  <span className="text-xl">🎮</span>
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-bold mb-4">Platform</h4>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Discover Skills</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Dashboard</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Live Sessions</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Community</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-bold mb-4">Support</h4>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Status</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-bold mb-4">Company</h4>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">About</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Press</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+              <p className="text-gray-400">
+                © {new Date().getFullYear()} SkillSphere. All rights reserved.
+              </p>
+              <div className="flex items-center space-x-6">
+                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Cookie Policy</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-20px);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 1s ease-out;
+        }
+
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.6;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+          }
+        }
+
+        .animate-pulse {
+          animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        html {
+          scroll-behavior: smooth;
+        }
+
+        * {
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+      `}</style>
+    </div>
+  );
+}
