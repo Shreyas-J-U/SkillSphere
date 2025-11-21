@@ -266,13 +266,6 @@ const ChatPage = () => {
                 Create Session
               </button>
             )}
-            <button
-              onClick={handleCompleteRequest}
-              className="px-4 py-2 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
-            >
-              <CheckCircle size={18} />
-              Complete
-            </button>
           </div>
         </div>
 
