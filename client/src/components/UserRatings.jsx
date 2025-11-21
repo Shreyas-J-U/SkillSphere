@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Star, User as UserIcon } from 'lucide-react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { Star, User as UserIcon } from "lucide-react";
+import axios from "axios";
 
 const UserRatings = ({ userId }) => {
   const [ratings, setRatings] = useState([]);
@@ -15,12 +15,14 @@ const UserRatings = ({ userId }) => {
   const fetchRatings = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/ratings/user/${userId}?page=${currentPage}&limit=5`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/ratings/user/${userId}?page=${currentPage}&limit=5`
       );
       setRatings(response.data.ratings);
       setTotalPages(response.data.totalPages);
     } catch (error) {
-      console.error('Error fetching ratings:', error);
+      console.error("Error fetching ratings:", error);
     } finally {
       setLoading(false);
     }
@@ -35,8 +37,8 @@ const UserRatings = ({ userId }) => {
             size={16}
             className={`${
               star <= rating
-                ? 'fill-yellow-400 text-yellow-400'
-                : 'text-gray-300'
+                ? "fill-yellow-400 text-yellow-400"
+                : "text-gray-300"
             }`}
           />
         ))}
@@ -72,17 +74,22 @@ const UserRatings = ({ userId }) => {
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-3">
               <img
-                src={rating.rater?.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+                src={
+                  rating.rater?.avatar ||
+                  "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                }
                 alt={rating.rater?.name}
                 className="w-12 h-12 rounded-full object-cover"
               />
               <div>
-                <h4 className="font-bold text-gray-900">{rating.rater?.name}</h4>
+                <h4 className="font-bold text-gray-900">
+                  {rating.rater?.name}
+                </h4>
                 <p className="text-sm text-gray-500">
-                  {new Date(rating.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
+                  {new Date(rating.createdAt).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
                   })}
                 </p>
               </div>
@@ -97,8 +104,9 @@ const UserRatings = ({ userId }) => {
           {rating.barterRequest && (
             <div className="mb-4 p-3 bg-blue-50 rounded-lg">
               <p className="text-sm text-gray-700">
-                <span className="font-semibold">Barter:</span>{' '}
-                {rating.barterRequest.skillOffered} ↔ {rating.barterRequest.skillRequested}
+                <span className="font-semibold">Barter:</span>{" "}
+                {rating.barterRequest.skillOffered} ↔{" "}
+                {rating.barterRequest.skillRequested}
               </p>
             </div>
           )}
@@ -111,24 +119,32 @@ const UserRatings = ({ userId }) => {
           )}
 
           {/* Category Ratings */}
-          {rating.categories && Object.keys(rating.categories).some(key => rating.categories[key] > 0) && (
-            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200">
-              {Object.entries(rating.categories).map(([category, value]) => {
-                if (value === 0) return null;
-                return (
-                  <div key={category} className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 capitalize">
-                      {category.replace(/([A-Z])/g, ' $1').trim()}
-                    </span>
-                    <div className="flex items-center space-x-1">
-                      {renderStars(value)}
-                      <span className="text-sm font-medium text-gray-700">{value}</span>
+          {rating.categories &&
+            Object.keys(rating.categories).some(
+              (key) => rating.categories[key] > 0
+            ) && (
+              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200">
+                {Object.entries(rating.categories).map(([category, value]) => {
+                  if (value === 0) return null;
+                  return (
+                    <div
+                      key={category}
+                      className="flex items-center justify-between"
+                    >
+                      <span className="text-sm text-gray-600 capitalize">
+                        {category.replace(/([A-Z])/g, " $1").trim()}
+                      </span>
+                      <div className="flex items-center space-x-1">
+                        {renderStars(value)}
+                        <span className="text-sm font-medium text-gray-700">
+                          {value}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            )}
         </div>
       ))}
 
@@ -136,7 +152,7 @@ const UserRatings = ({ userId }) => {
       {totalPages > 1 && (
         <div className="flex justify-center space-x-2 pt-4">
           <button
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
             className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -146,7 +162,7 @@ const UserRatings = ({ userId }) => {
             Page {currentPage} of {totalPages}
           </span>
           <button
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
             className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >

@@ -1,19 +1,19 @@
-import { motion } from 'framer-motion';
-import { MessageSquare, CheckCircle, XCircle, Clock, Star } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import RatingModal from './RatingModal';
+import { motion } from "framer-motion";
+import { MessageSquare, CheckCircle, XCircle, Clock, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import RatingModal from "./RatingModal";
 
 const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
   const navigate = useNavigate();
-  const isSender = type === 'sent';
+  const isSender = type === "sent";
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [canRate, setCanRate] = useState(false);
   const [otherParticipant, setOtherParticipant] = useState(null);
   const [completing, setCompleting] = useState(false);
 
-  const isCompleted = request.status === 'completed';
+  const isCompleted = request.status === "completed";
 
   useEffect(() => {
     if (isCompleted) {
@@ -23,11 +23,11 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
 
   const checkCanRate = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/ratings/can-rate/${request._id}`,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setCanRate(response.data.canRate);
@@ -35,27 +35,27 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
         setOtherParticipant(response.data.otherParticipant);
       }
     } catch (error) {
-      console.error('Error checking rating eligibility:', error);
+      console.error("Error checking rating eligibility:", error);
     }
   };
 
   const handleCompleteRequest = async () => {
     setCompleting(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${import.meta.env.VITE_API_URL}/api/barters/${request._id}/complete`,
         {},
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       if (onUpdate) {
         onUpdate(response.data);
       }
     } catch (error) {
-      console.error('Error completing request:', error);
-      alert('Failed to complete barter');
+      console.error("Error completing request:", error);
+      alert("Failed to complete barter");
     } finally {
       setCompleting(false);
     }
@@ -71,17 +71,35 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
 
   const getStatusBadge = (status) => {
     const badges = {
-      pending: { icon: Clock, class: 'bg-yellow-100 text-yellow-700', text: 'Pending' },
-      accepted: { icon: CheckCircle, class: 'bg-green-100 text-green-700', text: 'Accepted' },
-      rejected: { icon: XCircle, class: 'bg-red-100 text-red-700', text: 'Rejected' },
-      completed: { icon: CheckCircle, class: 'bg-blue-100 text-blue-700', text: 'Completed' }
+      pending: {
+        icon: Clock,
+        class: "bg-yellow-100 text-yellow-700",
+        text: "Pending",
+      },
+      accepted: {
+        icon: CheckCircle,
+        class: "bg-green-100 text-green-700",
+        text: "Accepted",
+      },
+      rejected: {
+        icon: XCircle,
+        class: "bg-red-100 text-red-700",
+        text: "Rejected",
+      },
+      completed: {
+        icon: CheckCircle,
+        class: "bg-blue-100 text-blue-700",
+        text: "Completed",
+      },
     };
 
     const badge = badges[status];
     const Icon = badge.icon;
 
     return (
-      <span className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 ${badge.class}`}>
+      <span
+        className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 ${badge.class}`}
+      >
         <Icon size={14} />
         <span>{badge.text}</span>
       </span>
@@ -101,16 +119,22 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
             <img
-              src={otherUser?.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+              src={
+                otherUser?.avatar ||
+                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              }
               alt={otherUser?.name}
               className="w-12 h-12 rounded-full border-2 border-blue-500"
               onError={(e) => {
                 e.target.onerror = null;
-                e.target.src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                e.target.src =
+                  "https://cdn-icons-png.flaticon.com/512/149/149071.png";
               }}
             />
             <div>
-              <h3 className="font-semibold text-lg text-gray-900">{otherUser?.name}</h3>
+              <h3 className="font-semibold text-lg text-gray-900">
+                {otherUser?.name}
+              </h3>
               <p className="text-sm text-gray-500">{otherUser?.email}</p>
             </div>
           </div>
@@ -120,16 +144,20 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
         <div className="space-y-3 mb-4">
           <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
             <p className="text-sm text-gray-600 mb-1">
-              {isSender ? 'You offered:' : 'They offered:'}
+              {isSender ? "You offered:" : "They offered:"}
             </p>
-            <p className="font-semibold text-blue-700">{request.skillOffered}</p>
+            <p className="font-semibold text-blue-700">
+              {request.skillOffered}
+            </p>
           </div>
 
           <div className="bg-purple-50 p-3 rounded-xl border border-purple-100">
             <p className="text-sm text-gray-600 mb-1">
-              {isSender ? 'You requested:' : 'They requested:'}
+              {isSender ? "You requested:" : "They requested:"}
             </p>
-            <p className="font-semibold text-purple-700">{request.skillRequested}</p>
+            <p className="font-semibold text-purple-700">
+              {request.skillRequested}
+            </p>
           </div>
 
           {request.message && (
@@ -139,32 +167,36 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
             </div>
           )}
         </div>
-        
-        {request.session && (request.session.status === 'scheduled' || request.session.status === 'in-progress') && (
-          <div className={`mb-4 p-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${
-            request.session.status === 'in-progress' 
-              ? 'bg-green-100 text-green-700 border border-green-200' 
-              : 'bg-blue-50 text-blue-600 border border-blue-100'
-          }`}>
-            {request.session.status === 'in-progress' ? (
-              <>
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                </span>
-                Session Started - Join Now!
-              </>
-            ) : (
-              <>
-                <Clock size={16} />
-                Session Scheduled
-              </>
-            )}
-          </div>
-        )}
+
+        {request.session &&
+          (request.session.status === "scheduled" ||
+            request.session.status === "in-progress") && (
+            <div
+              className={`mb-4 p-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${
+                request.session.status === "in-progress"
+                  ? "bg-green-100 text-green-700 border border-green-200"
+                  : "bg-blue-50 text-blue-600 border border-blue-100"
+              }`}
+            >
+              {request.session.status === "in-progress" ? (
+                <>
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                  </span>
+                  Session Started - Join Now!
+                </>
+              ) : (
+                <>
+                  <Clock size={16} />
+                  Session Scheduled
+                </>
+              )}
+            </div>
+          )}
 
         <div className="flex gap-2">
-          {request.status === 'pending' && !isSender && (
+          {request.status === "pending" && !isSender && (
             <>
               <motion.button
                 onClick={() => onAccept(request._id)}
@@ -187,7 +219,7 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
             </>
           )}
 
-          {request.status === 'accepted' && (
+          {request.status === "accepted" && (
             <>
               <motion.button
                 onClick={() => navigate(`/chat/${request._id}`)}
@@ -203,11 +235,15 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
                   </span>
                 )}
               </motion.button>
-              
+
               {/* Completion Logic */}
               {(() => {
-                const hasCompleted = isSender ? request.senderCompleted : request.receiverCompleted;
-                const partnerCompleted = isSender ? request.receiverCompleted : request.senderCompleted;
+                const hasCompleted = isSender
+                  ? request.senderCompleted
+                  : request.receiverCompleted;
+                const partnerCompleted = isSender
+                  ? request.receiverCompleted
+                  : request.senderCompleted;
 
                 if (hasCompleted) {
                   return (
@@ -227,7 +263,7 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
                     className="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <CheckCircle size={18} />
-                    {completing ? 'Marking...' : 'Mark Complete'}
+                    {completing ? "Marking..." : "Mark Complete"}
                   </motion.button>
                 );
               })()}
@@ -255,10 +291,10 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
         </div>
 
         <p className="text-xs text-gray-400 mt-3">
-          {new Date(request.createdAt).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+          {new Date(request.createdAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
           })}
         </p>
       </motion.div>

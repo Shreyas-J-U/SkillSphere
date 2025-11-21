@@ -1,40 +1,46 @@
-import React, { useState } from 'react';
-import { X, Star } from 'lucide-react';
-import axios from 'axios';
+import React, { useState } from "react";
+import { X, Star } from "lucide-react";
+import axios from "axios";
 
-const RatingModal = ({ isOpen, onClose, barterRequest, otherUser, onRatingSubmitted }) => {
+const RatingModal = ({
+  isOpen,
+  onClose,
+  barterRequest,
+  otherUser,
+  onRatingSubmitted,
+}) => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
-  const [review, setReview] = useState('');
+  const [review, setReview] = useState("");
   const [categories, setCategories] = useState({
     communication: 0,
     skillQuality: 0,
     punctuality: 0,
-    professionalism: 0
+    professionalism: 0,
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const categoryLabels = {
-    communication: 'Communication',
-    skillQuality: 'Skill Quality',
-    punctuality: 'Punctuality',
-    professionalism: 'Professionalism'
+    communication: "Communication",
+    skillQuality: "Skill Quality",
+    punctuality: "Punctuality",
+    professionalism: "Professionalism",
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (rating === 0) {
-      setError('Please select a rating');
+      setError("Please select a rating");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/ratings`,
         {
@@ -42,22 +48,22 @@ const RatingModal = ({ isOpen, onClose, barterRequest, otherUser, onRatingSubmit
           rateeId: otherUser._id,
           rating,
           review,
-          categories
+          categories,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       if (onRatingSubmitted) {
         onRatingSubmitted(response.data);
       }
-      
+
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit rating');
+      setError(err.response?.data?.message || "Failed to submit rating");
     } finally {
       setLoading(false);
     }
@@ -79,8 +85,8 @@ const RatingModal = ({ isOpen, onClose, barterRequest, otherUser, onRatingSubmit
               size={size}
               className={`${
                 star <= (hoverRating || value)
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-gray-300'
+                  ? "fill-yellow-400 text-yellow-400"
+                  : "text-gray-300"
               } transition-colors`}
             />
           </button>
@@ -97,7 +103,9 @@ const RatingModal = ({ isOpen, onClose, barterRequest, otherUser, onRatingSubmit
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Rate Your Experience</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Rate Your Experience
+            </h2>
             <p className="text-gray-600 mt-1">
               How was your barter with {otherUser?.name}?
             </p>
@@ -121,7 +129,10 @@ const RatingModal = ({ isOpen, onClose, barterRequest, otherUser, onRatingSubmit
           {/* User Info */}
           <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
             <img
-              src={otherUser?.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+              src={
+                otherUser?.avatar ||
+                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              }
               alt={otherUser?.name}
               className="w-16 h-16 rounded-full object-cover"
             />
@@ -141,11 +152,11 @@ const RatingModal = ({ isOpen, onClose, barterRequest, otherUser, onRatingSubmit
             {renderStars(rating, setRating, 32)}
             {rating > 0 && (
               <p className="text-sm text-gray-600">
-                {rating === 1 && 'Poor'}
-                {rating === 2 && 'Fair'}
-                {rating === 3 && 'Good'}
-                {rating === 4 && 'Very Good'}
-                {rating === 5 && 'Excellent'}
+                {rating === 1 && "Poor"}
+                {rating === 2 && "Fair"}
+                {rating === 3 && "Good"}
+                {rating === 4 && "Very Good"}
+                {rating === 5 && "Excellent"}
               </p>
             )}
           </div>
@@ -156,13 +167,17 @@ const RatingModal = ({ isOpen, onClose, barterRequest, otherUser, onRatingSubmit
               Detailed Ratings (Optional)
             </label>
             {Object.keys(categories).map((category) => (
-              <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div
+                key={category}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
                 <span className="text-sm font-medium text-gray-700">
                   {categoryLabels[category]}
                 </span>
                 {renderStars(
                   categories[category],
-                  (value) => setCategories({ ...categories, [category]: value }),
+                  (value) =>
+                    setCategories({ ...categories, [category]: value }),
                   20
                 )}
               </div>
@@ -201,7 +216,7 @@ const RatingModal = ({ isOpen, onClose, barterRequest, otherUser, onRatingSubmit
               disabled={loading || rating === 0}
               className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Submitting...' : 'Submit Rating'}
+              {loading ? "Submitting..." : "Submit Rating"}
             </button>
           </div>
         </form>

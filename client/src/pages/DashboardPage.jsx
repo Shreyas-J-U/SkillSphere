@@ -1,25 +1,42 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Filter, Send, X, Users, TrendingUp, CheckCircle, Clock } from 'lucide-react';
-import Navbar from '../components/Navbar';
-import UserCard from '../components/UserCard';
-import BarterRequestCard from '../components/BarterRequestCard';
-import BarterHistoryModal from '../components/BarterHistoryModal';
-import { getUsers } from '../api/userApi';
-import { createBarterRequest, getBarterRequests, acceptBarterRequest, rejectBarterRequest } from '../api/barterApi';
-import { useAuth } from '../context/AuthContext';
-import { useSocket } from '../context/SocketContext';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Search,
+  Filter,
+  Send,
+  X,
+  Users,
+  TrendingUp,
+  CheckCircle,
+  Clock,
+} from "lucide-react";
+import Navbar from "../components/Navbar";
+import UserCard from "../components/UserCard";
+import BarterRequestCard from "../components/BarterRequestCard";
+import BarterHistoryModal from "../components/BarterHistoryModal";
+import { getUsers } from "../api/userApi";
+import {
+  createBarterRequest,
+  getBarterRequests,
+  acceptBarterRequest,
+  rejectBarterRequest,
+} from "../api/barterApi";
+import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 
 const DashboardPage = () => {
   const [users, setUsers] = useState([]);
   const [requests, setRequests] = useState({ sent: [], received: [] });
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('discover');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("discover");
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [requestMessage, setRequestMessage] = useState('');
-  const [selectedSkills, setSelectedSkills] = useState({ offered: '', requested: '' });
+  const [requestMessage, setRequestMessage] = useState("");
+  const [selectedSkills, setSelectedSkills] = useState({
+    offered: "",
+    requested: "",
+  });
   const [showHistory, setShowHistory] = useState(false);
   const { user } = useAuth();
   const { socket } = useSocket();
@@ -30,22 +47,22 @@ const DashboardPage = () => {
 
   useEffect(() => {
     if (socket) {
-      socket.on('new_barter_request', handleNewRequest);
-      socket.on('barter_status_changed', handleStatusChange);
-      socket.on('new_notification', () => fetchData()); // Refresh on new message
+      socket.on("new_barter_request", handleNewRequest);
+      socket.on("barter_status_changed", handleStatusChange);
+      socket.on("new_notification", () => fetchData()); // Refresh on new message
 
       return () => {
-        socket.off('new_barter_request');
-        socket.off('barter_status_changed');
-        socket.off('new_notification');
+        socket.off("new_barter_request");
+        socket.off("barter_status_changed");
+        socket.off("new_notification");
       };
     }
   }, [socket]);
 
-    // Dynamic search with debouncing
+  // Dynamic search with debouncing
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
-      if (activeTab === 'discover') {
+      if (activeTab === "discover") {
         fetchUsers();
       }
     }, 300); // 300ms delay to avoid excessive API calls
@@ -58,33 +75,31 @@ const DashboardPage = () => {
       const usersData = await getUsers({ search: searchTerm });
       setUsers(usersData);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     }
   };
-
-
 
   const fetchData = async () => {
     try {
       setLoading(true);
       const [usersData, sentRequests, receivedRequests] = await Promise.all([
         getUsers({ search: searchTerm }),
-        getBarterRequests({ type: 'sent' }),
-        getBarterRequests({ type: 'received' })
+        getBarterRequests({ type: "sent" }),
+        getBarterRequests({ type: "received" }),
       ]);
       setUsers(usersData);
       setRequests({ sent: sentRequests, received: receivedRequests });
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleNewRequest = (request) => {
-    setRequests(prev => ({
+    setRequests((prev) => ({
       ...prev,
-      received: [request, ...prev.received]
+      received: [request, ...prev.received],
     }));
   };
 
@@ -103,76 +118,104 @@ const DashboardPage = () => {
         receiverId: selectedUser._id,
         skillOffered: selectedSkills.offered,
         skillRequested: selectedSkills.requested,
-        message: requestMessage
+        message: requestMessage,
       });
 
       if (socket) {
-        socket.emit('barter_request_sent', {
+        socket.emit("barter_request_sent", {
           receiverId: selectedUser._id,
-          request
+          request,
         });
       }
 
-      setRequests(prev => ({
+      setRequests((prev) => ({
         ...prev,
-        sent: [request, ...prev.sent]
+        sent: [request, ...prev.sent],
       }));
 
       setShowRequestModal(false);
-      setRequestMessage('');
-      setSelectedSkills({ offered: '', requested: '' });
+      setRequestMessage("");
+      setSelectedSkills({ offered: "", requested: "" });
       setSelectedUser(null);
     } catch (error) {
-      console.error('Error sending request:', error);
-      alert(error.response?.data?.message || 'Failed to send request');
+      console.error("Error sending request:", error);
+      alert(error.response?.data?.message || "Failed to send request");
     }
   };
 
   const handleAccept = async (requestId) => {
     try {
       const { request } = await acceptBarterRequest(requestId);
-      
+
       if (socket) {
-        socket.emit('barter_status_updated', {
+        socket.emit("barter_status_updated", {
           userId: request.sender._id,
-          request
+          request,
         });
       }
 
       fetchData();
     } catch (error) {
-      console.error('Error accepting request:', error);
+      console.error("Error accepting request:", error);
     }
   };
 
   const handleReject = async (requestId) => {
     try {
       const request = await rejectBarterRequest(requestId);
-      
+
       if (socket) {
-        socket.emit('barter_status_updated', {
+        socket.emit("barter_status_updated", {
           userId: request.sender._id,
-          request
+          request,
         });
       }
 
       fetchData();
     } catch (error) {
-      console.error('Error rejecting request:', error);
+      console.error("Error rejecting request:", error);
     }
   };
 
   const stats = [
-    { label: 'Total Users', value: users.length, icon: Users, color: 'from-blue-500 to-blue-600' },
-    { label: 'Sent Requests', value: requests.sent.length, icon: TrendingUp, color: 'from-purple-500 to-purple-600' },
-    { label: 'Received', value: requests.received.length, icon: CheckCircle, color: 'from-indigo-500 to-indigo-600' },
-    { label: 'Pending', value: requests.received.filter(r => r.status === 'pending').length, icon: Clock, color: 'from-pink-500 to-pink-600' }
+    {
+      label: "Total Users",
+      value: users.length,
+      icon: Users,
+      color: "from-blue-500 to-blue-600",
+    },
+    {
+      label: "Sent Requests",
+      value: requests.sent.length,
+      icon: TrendingUp,
+      color: "from-purple-500 to-purple-600",
+    },
+    {
+      label: "Received",
+      value: requests.received.length,
+      icon: CheckCircle,
+      color: "from-indigo-500 to-indigo-600",
+    },
+    {
+      label: "Pending",
+      value: requests.received.filter((r) => r.status === "pending").length,
+      icon: Clock,
+      color: "from-pink-500 to-pink-600",
+    },
   ];
 
   // Calculate counts
-  const sentUnreadCount = requests.sent.reduce((acc, r) => acc + (r.unreadCount || 0), 0);
-  const receivedUnreadCount = requests.received.reduce((acc, r) => acc + (r.unreadCount || 0), 0);
-  const receivedPendingCount = requests.received.filter(r => r.status === 'pending').length;
+  const sentUnreadCount = requests.sent.reduce(
+    (acc, r) => acc + (r.unreadCount || 0),
+    0
+  );
+  const receivedUnreadCount = requests.received.reduce(
+    (acc, r) => acc + (r.unreadCount || 0),
+    0
+  );
+  const receivedPendingCount = requests.received.filter(
+    (r) => r.status === "pending"
+  ).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -181,8 +224,14 @@ const DashboardPage = () => {
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-indigo-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        ></div>
+        <div
+          className="absolute top-1/2 left-1/2 w-64 h-64 bg-indigo-400/10 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "2s" }}
+        ></div>
       </div>
 
       <div className="container mx-auto px-6 py-8 relative z-10">
@@ -193,9 +242,15 @@ const DashboardPage = () => {
           className="mb-8"
         >
           <h1 className="text-4xl lg:text-5xl font-bold mb-2 text-gray-900">
-            Welcome back, <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{user?.name}</span>! 👋
+            Welcome back,{" "}
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              {user?.name}
+            </span>
+            ! 👋
           </h1>
-          <p className="text-gray-600 text-lg">Discover new skills and connect with learners</p>
+          <p className="text-gray-600 text-lg">
+            Discover new skills and connect with learners
+          </p>
         </motion.div>
 
         {/* Stats Cards */}
@@ -211,10 +266,14 @@ const DashboardPage = () => {
                 whileHover={{ y: -5, scale: 1.02 }}
                 className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
               >
-                <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mb-3`}>
+                <div
+                  className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mb-3`}
+                >
                   <Icon className="text-white" size={24} />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {stat.value}
+                </h3>
                 <p className="text-gray-600 text-sm">{stat.label}</p>
               </motion.div>
             );
@@ -223,7 +282,7 @@ const DashboardPage = () => {
 
         {/* Tabs */}
         <div className="flex flex-wrap gap-3 mb-6">
-          {['discover', 'sent', 'received'].map((tab) => (
+          {["discover", "sent", "received"].map((tab) => (
             <motion.button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -231,21 +290,22 @@ const DashboardPage = () => {
               whileTap={{ scale: 0.95 }}
               className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center ${
                 activeTab === tab
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                  : 'bg-white text-gray-700 hover:shadow-md border border-gray-200'
+                  ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                  : "bg-white text-gray-700 hover:shadow-md border border-gray-200"
               }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              
+
               {/* Badge for Received Tab (Pending Requests + Unread Messages) */}
-              {tab === 'received' && (receivedPendingCount + receivedUnreadCount) > 0 && (
-                <span className="ml-2 px-2.5 py-0.5 bg-red-500 text-white rounded-full text-xs font-bold animate-pulse shadow-sm border border-white/20">
-                  {receivedPendingCount + receivedUnreadCount}
-                </span>
-              )}
+              {tab === "received" &&
+                receivedPendingCount + receivedUnreadCount > 0 && (
+                  <span className="ml-2 px-2.5 py-0.5 bg-red-500 text-white rounded-full text-xs font-bold animate-pulse shadow-sm border border-white/20">
+                    {receivedPendingCount + receivedUnreadCount}
+                  </span>
+                )}
 
               {/* Badge for Sent Tab (Unread Messages only) */}
-              {tab === 'sent' && sentUnreadCount > 0 && (
+              {tab === "sent" && sentUnreadCount > 0 && (
                 <span className="ml-2 px-2.5 py-0.5 bg-red-500 text-white rounded-full text-xs font-bold animate-pulse shadow-sm border border-white/20">
                   {sentUnreadCount}
                 </span>
@@ -255,19 +315,22 @@ const DashboardPage = () => {
         </div>
 
         {/* Search Bar (only for discover tab) */}
-        {activeTab === 'discover' && (
+        {activeTab === "discover" && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-6"
           >
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && fetchData()}
+                onKeyPress={(e) => e.key === "Enter" && fetchData()}
                 className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-gray-900 placeholder-gray-400"
                 placeholder="Search for users or skills..."
               />
@@ -282,7 +345,7 @@ const DashboardPage = () => {
           </div>
         ) : (
           <>
-            {activeTab === 'discover' && (
+            {activeTab === "discover" && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -306,7 +369,7 @@ const DashboardPage = () => {
               </motion.div>
             )}
 
-            {activeTab === 'sent' && (
+            {activeTab === "sent" && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -319,7 +382,11 @@ const DashboardPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <BarterRequestCard request={request} type="sent" onUpdate={fetchData} />
+                    <BarterRequestCard
+                      request={request}
+                      type="sent"
+                      onUpdate={fetchData}
+                    />
                   </motion.div>
                 ))}
                 {requests.sent.length === 0 && (
@@ -330,7 +397,7 @@ const DashboardPage = () => {
               </motion.div>
             )}
 
-            {activeTab === 'received' && (
+            {activeTab === "received" && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -354,7 +421,9 @@ const DashboardPage = () => {
                 ))}
                 {requests.received.length === 0 && (
                   <div className="col-span-full text-center py-20">
-                    <p className="text-gray-500 text-lg">No received requests</p>
+                    <p className="text-gray-500 text-lg">
+                      No received requests
+                    </p>
                   </div>
                 )}
               </motion.div>
@@ -372,7 +441,9 @@ const DashboardPage = () => {
             className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Send Barter Request</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Send Barter Request
+              </h2>
               <button
                 onClick={() => setShowRequestModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -383,37 +454,57 @@ const DashboardPage = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Skill You Offer</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Skill You Offer
+                </label>
                 <select
                   value={selectedSkills.offered}
-                  onChange={(e) => setSelectedSkills({ ...selectedSkills, offered: e.target.value })}
+                  onChange={(e) =>
+                    setSelectedSkills({
+                      ...selectedSkills,
+                      offered: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-gray-900"
                   required
                 >
                   <option value="">Select a skill...</option>
                   {user?.skillsOffered?.map((skill, index) => (
-                    <option key={index} value={skill}>{skill}</option>
+                    <option key={index} value={skill}>
+                      {skill}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Skill You Want</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Skill You Want
+                </label>
                 <select
                   value={selectedSkills.requested}
-                  onChange={(e) => setSelectedSkills({ ...selectedSkills, requested: e.target.value })}
+                  onChange={(e) =>
+                    setSelectedSkills({
+                      ...selectedSkills,
+                      requested: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-gray-900"
                   required
                 >
                   <option value="">Select a skill...</option>
                   {selectedUser.skillsOffered?.map((skill, index) => (
-                    <option key={index} value={skill}>{skill}</option>
+                    <option key={index} value={skill}>
+                      {skill}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Message (Optional)</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Message (Optional)
+                </label>
                 <textarea
                   value={requestMessage}
                   onChange={(e) => setRequestMessage(e.target.value)}
@@ -438,7 +529,10 @@ const DashboardPage = () => {
       )}
 
       {/* History Modal */}
-      <BarterHistoryModal isOpen={showHistory} onClose={() => setShowHistory(false)} />
+      <BarterHistoryModal
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+      />
     </div>
   );
 };
