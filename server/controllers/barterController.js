@@ -248,9 +248,12 @@ export const completeBarterRequest = async (req, res) => {
       return res.status(404).json({ message: 'Barter request not found' });
     }
 
-    // Both sender and receiver can mark as complete
-    if (request.sender.toString() !== req.user._id.toString() &&
-        request.receiver.toString() !== req.user._id.toString()) {
+    const userId = req.user._id.toString();
+    const isSender = request.sender.toString() === userId;
+    const isReceiver = request.receiver.toString() === userId;
+
+    // Check authorization
+    if (!isSender && !isReceiver) {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
@@ -258,7 +261,18 @@ export const completeBarterRequest = async (req, res) => {
       return res.status(400).json({ message: 'Request must be accepted first' });
     }
 
-    request.status = 'completed';
+    // Update individual completion status
+    if (isSender) {
+      request.senderCompleted = true;
+    } else if (isReceiver) {
+      request.receiverCompleted = true;
+    }
+
+    // Check if both have completed
+    if (request.senderCompleted && request.receiverCompleted) {
+      request.status = 'completed';
+    }
+
     await request.save();
 
     const populatedRequest = await BarterRequest.findById(request._id)
