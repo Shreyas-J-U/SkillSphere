@@ -30,6 +30,14 @@ const barterRequestSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'accepted', 'rejected', 'completed'],
     default: 'pending'
+  },
+  senderCompleted: {
+    type: Boolean,
+    default: false
+  },
+  receiverCompleted: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
