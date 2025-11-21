@@ -25,6 +25,19 @@
 - Track request status (Pending, Accepted, Completed, Rejected)
 - Email notifications for requests
 
+### ⭐ **Rating & Reputation System**
+- Rate users after completed barters
+- 5-star rating system with categories (Communication, Expertise, Punctuality)
+- Write detailed reviews
+- View user reputation on profile cards
+- "Rated" badges for completed interactions
+
+### 🔍 **Dynamic Discovery**
+- Real-time search with debouncing
+- Search by name, email, or skills (offered/wanted)
+- Smart filtering
+- Instant results as you type
+
 ### 💬 **Real-Time Chat**
 - Socket.IO powered messaging
 - Text and media support
@@ -192,6 +205,12 @@ To enable email notifications:
 - `POST /api/sessions` - Create session
 - `GET /api/sessions/barter/:barterId` - Get session
 - `PUT /api/sessions/:id/ready` - Mark as ready
+
+### Ratings
+- `POST /api/ratings` - Submit a rating
+- `GET /api/ratings/user/:userId` - Get user ratings
+- `GET /api/ratings/can-rate/:barterRequestId` - Check eligibility
+- `GET /api/ratings/stats/:userId` - Get rating statistics
 
 ### Upload
 - `POST /api/upload` - Upload file to Cloudinary
