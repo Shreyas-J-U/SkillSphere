@@ -7,34 +7,35 @@ import {
   ArrowRight,
   Users,
   MessageCircle,
-  Monitor,
   Zap,
   Target,
-  Eye,
   Star,
   Repeat,
   BookOpen,
   Award,
-  Search,
   Menu,
   X,
-  Rocket,
-  Globe,
   Shield,
-  Code,
   TrendingUp,
-  Heart,
-  BarChart3,
   Sparkles,
+  Check,
+  Clock,
+  Globe,
+  Heart,
+  Lightbulb,
+  Rocket,
+  ChevronRight,
+  PlayCircle,
+  Cpu,
+  Award as Trophy,
 } from "lucide-react";
 
-// Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
 const COLORS = {
   gradientPrimary: "from-blue-600 via-purple-600 to-pink-500",
   gradientHover: "from-blue-500 via-purple-500 to-pink-400",
-  accentLime: "#84cc16", // Gen-Z energy color
+  accentLime: "#84cc16",
 };
 
 const LIVE_SWAPS = [
@@ -51,7 +52,14 @@ const LIVE_SWAPS = [
   },
 ];
 
-const TYPING_SKILLS = ["Python", "Guitar", "French", "Photoshop", "Calculus"];
+const TYPING_SKILLS = [
+  "Python",
+  "Guitar",
+  "French",
+  "Photoshop",
+  "Calculus",
+  "Marketing",
+];
 
 const Button = ({ children, className = "", variant = "primary", onClick }) => {
   const baseStyle =
@@ -82,6 +90,7 @@ export default function LandingPage() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [typingText, setTypingText] = useState("");
   const [typingIndex, setTypingIndex] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   const mainRef = useRef(null);
   const heroRef = useRef(null);
@@ -124,10 +133,23 @@ export default function LandingPage() {
     return () => clearInterval(typeInterval);
   }, [typingIndex]);
 
-  // GSAP Animations
+  // Scroll Progress
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalScroll =
+        document.documentElement.scrollHeight - window.innerHeight;
+      const progress = (window.scrollY / totalScroll) * 100;
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Advanced GSAP Animations
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      // 1. Navbar Animation
+      // Navbar with blur effect
       gsap.from(navRef.current, {
         y: -100,
         opacity: 0,
@@ -135,169 +157,217 @@ export default function LandingPage() {
         ease: "power4.out",
       });
 
-      // 2. Hero Animations
-      const tl = gsap.timeline();
-
-      tl.from(".hero-badge", {
-        y: 20,
-        opacity: 0,
-        duration: 0.6,
-        ease: "power2.out",
-      })
+      // Hero staggered entrance
+      const heroTl = gsap.timeline();
+      heroTl
+        .from(".hero-badge", {
+          y: 30,
+          opacity: 0,
+          duration: 0.8,
+          ease: "back.out(1.7)",
+        })
         .from(
           ".hero-title .word",
           {
-            y: 50,
+            y: 100,
             opacity: 0,
-            duration: 0.8,
-            stagger: 0.1,
+            rotationX: -90,
+            duration: 1,
+            stagger: 0.15,
             ease: "power4.out",
           },
-          "-=0.3"
-        )
-        .from(
-          ".hero-desc",
-          {
-            y: 20,
-            opacity: 0,
-            duration: 0.6,
-            ease: "power2.out",
-          },
           "-=0.4"
         )
+        .from(".hero-desc", { y: 30, opacity: 0, duration: 0.8 }, "-=0.6")
         .from(
           ".hero-btns",
-          {
-            y: 20,
-            opacity: 0,
-            duration: 0.6,
-            ease: "power2.out",
-          },
-          "-=0.4"
+          { y: 30, opacity: 0, scale: 0.9, duration: 0.8 },
+          "-=0.6"
         )
         .from(
           ".hero-visual",
           {
-            scale: 0.9,
+            scale: 0.8,
             opacity: 0,
-            duration: 1,
-            ease: "power4.out",
+            duration: 1.2,
+            ease: "elastic.out(1, 0.5)",
           },
-          "-=0.6"
+          "-=0.8"
         );
 
-      // 3. Floating Elements Animation (Continuous)
+      // Floating cards with parallax
       gsap.to(".floating-card-1", {
-        y: -20,
-        duration: 3,
+        y: -30,
+        x: 10,
+        rotation: 2,
+        duration: 4,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
       });
 
       gsap.to(".floating-card-2", {
-        y: 20,
-        duration: 4,
+        y: 30,
+        x: -10,
+        rotation: -2,
+        duration: 5,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
         delay: 1,
       });
 
-      // 4. Generic Section Animations
-      const sections = gsap.utils.toArray(".animate-section");
-      sections.forEach((section) => {
-        gsap.fromTo(
-          section,
-          { y: 50, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.8,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: section,
-              start: "top 80%",
-              toggleActions: "play none none reverse",
-            },
-          }
-        );
+      // Stats counter animation
+      gsap.utils.toArray(".stat-value").forEach((stat) => {
+        ScrollTrigger.create({
+          trigger: stat,
+          start: "top 80%",
+          onEnter: () => {
+            const target = stat.getAttribute("data-target");
+            gsap.to(stat, {
+              innerText: target,
+              duration: 2,
+              snap: { innerText: 1 },
+              ease: "power2.out",
+            });
+          },
+        });
       });
 
-      // 5. Features Section Specific Animations
-      gsap.fromTo(
-        ".features-header",
-        { y: 30, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
+      // Features with magnetic effect
+      gsap.utils.toArray(".feature-card").forEach((card, i) => {
+        gsap.from(card, {
+          y: 100,
+          opacity: 0,
+          rotation: i % 2 === 0 ? -5 : 5,
+          duration: 1,
           ease: "power3.out",
           scrollTrigger: {
-            trigger: ".features-header",
+            trigger: card,
             start: "top 85%",
-          },
-        }
-      );
-
-      gsap.fromTo(
-        ".feature-card",
-        { y: 50, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.6,
-          stagger: 0.1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: ".features-grid",
-            start: "top 75%",
+            end: "top 20%",
             toggleActions: "play none none reverse",
           },
-        }
-      );
+        });
 
-      // 6. How It Works Animations
-      gsap.fromTo(
-        ".steps-header",
-        { y: 30, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          ease: "power3.out",
+        // Parallax effect on scroll
+        gsap.to(card, {
+          y: -20,
           scrollTrigger: {
-            trigger: ".steps-header",
-            start: "top 85%",
+            trigger: card,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1,
           },
-        }
-      );
+        });
+      });
 
-      gsap.fromTo(
-        ".step-card",
-        { x: -50, opacity: 0 },
-        {
-          x: 0,
-          opacity: 1,
-          duration: 0.8,
-          stagger: 0.2,
-          ease: "power3.out",
+      // Steps with timeline reveal
+      const steps = gsap.utils.toArray(".step-card");
+      steps.forEach((step, i) => {
+        const tl = gsap.timeline({
           scrollTrigger: {
-            trigger: ".steps-container",
-            start: "top 70%",
+            trigger: step,
+            start: "top 80%",
+            end: "top 30%",
             toggleActions: "play none none reverse",
           },
-        }
-      );
+        });
+
+        tl.from(step.querySelector(".step-number"), {
+          scale: 0,
+          rotation: 360,
+          duration: 0.8,
+          ease: "back.out(2)",
+        })
+          .from(
+            step.querySelector(".step-content"),
+            {
+              x: i % 2 === 0 ? -100 : 100,
+              opacity: 0,
+              duration: 0.8,
+            },
+            "-=0.4"
+          )
+          .from(
+            step.querySelector(".step-image"),
+            {
+              scale: 0.8,
+              opacity: 0,
+              duration: 0.8,
+            },
+            "-=0.6"
+          );
+      });
+
+      // Testimonials with scale effect
+      gsap.utils.toArray(".testimonial-card").forEach((card, i) => {
+        gsap.from(card, {
+          scale: 0.8,
+          opacity: 0,
+          y: 50,
+          duration: 0.8,
+          ease: "back.out(1.5)",
+          scrollTrigger: {
+            trigger: card,
+            start: "top 85%",
+            toggleActions: "play none none reverse",
+          },
+          delay: i * 0.1,
+        });
+      });
+
+      // CTA with magnetic reveal
+      gsap.from(".cta-section", {
+        scale: 0.9,
+        opacity: 0,
+        y: 50,
+        duration: 1,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".cta-section",
+          start: "top 80%",
+        },
+      });
+
+      // Parallax backgrounds
+      gsap.to(".parallax-bg-1", {
+        y: 200,
+        scrollTrigger: {
+          trigger: ".parallax-bg-1",
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 1,
+        },
+      });
+
+      gsap.to(".parallax-bg-2", {
+        y: -150,
+        scrollTrigger: {
+          trigger: ".parallax-bg-2",
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 1,
+        },
+      });
     }, mainRef);
 
     return () => ctx.revert();
   }, []);
+
   return (
     <div
       ref={mainRef}
-      className="min-h-screen bg-slate-50 bg-graph-paper font-sans selection:bg-purple-200 overflow-x-hidden relative noise-overlay"
+      className="min-h-screen bg-slate-50 font-sans selection:bg-purple-200 overflow-x-hidden relative"
     >
+      {/* Scroll Progress Bar */}
+      <div className="fixed top-0 left-0 w-full h-1 bg-slate-200 z-[100]">
+        <div
+          className={`h-full bg-gradient-to-r ${COLORS.gradientPrimary} transition-all duration-300`}
+          style={{ width: `${scrollProgress}%` }}
+        />
+      </div>
+
       {/* Navbar */}
       <nav
         ref={navRef}
@@ -305,11 +375,7 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            {/* Logo */}
-            <div
-              className="flex items-center gap-2 cursor-pointer group"
-              onClick={() => navigate("/")}
-            >
+            <div className="flex items-center gap-2 cursor-pointer group">
               <div
                 className={`w-10 h-10 rounded-xl bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300`}
               >
@@ -323,7 +389,6 @@ export default function LandingPage() {
               </span>
             </div>
 
-            {/* Desktop Nav */}
             <div className="hidden md:flex items-center space-x-8">
               {["Features", "How it Works", "Community"].map((item) => (
                 <a
@@ -335,7 +400,6 @@ export default function LandingPage() {
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-600 transition-all group-hover:w-full" />
                 </a>
               ))}
-
               {isAuthenticated ? (
                 <Button
                   variant="primary"
@@ -345,7 +409,7 @@ export default function LandingPage() {
                   Dashboard <ArrowRight size={16} />
                 </Button>
               ) : (
-                <div className="flex items-center gap-4">
+                <>
                   <button
                     onClick={handleLogin}
                     className="text-slate-700 font-semibold hover:text-purple-600 transition-colors"
@@ -359,11 +423,10 @@ export default function LandingPage() {
                   >
                     Get Started
                   </Button>
-                </div>
+                </>
               )}
             </div>
 
-            {/* Mobile Menu Toggle */}
             <div className="md:hidden">
               <button
                 onClick={() => setIsNavOpen(!isNavOpen)}
@@ -375,7 +438,6 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isNavOpen && (
           <div className="md:hidden bg-white border-b border-slate-200 absolute w-full">
             <div className="px-4 pt-2 pb-8 space-y-4">
@@ -425,26 +487,18 @@ export default function LandingPage() {
         ref={heroRef}
         className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden"
       >
-        {/* Background Elements */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-          <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-purple-400/20 rounded-full blur-[100px] animate-pulse" />
-          <div
-            className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[100px] animate-pulse"
-            style={{ animationDelay: "2s" }}
-          />
-        </div>
+        <div className="parallax-bg-1 absolute top-0 right-[-10%] w-[600px] h-[600px] bg-purple-400/20 rounded-full blur-[120px]" />
+        <div className="parallax-bg-2 absolute bottom-[-10%] left-[-10%] w-[700px] h-[700px] bg-blue-400/20 rounded-full blur-[120px]" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-5xl mx-auto">
-            {/* Badge */}
             <div className="hero-badge flex justify-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-purple-100 shadow-sm text-purple-700 font-medium text-sm">
-                <Sparkles size={16} />
-                <span>The Future of Student Learning</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-purple-100 shadow-lg text-purple-700 font-medium text-sm">
+                <Sparkles size={16} className="animate-pulse" />
+                <span>Join 10,000+ Students Learning Smarter</span>
               </div>
             </div>
 
-            {/* Title */}
             <h1 className="hero-title text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 tracking-tight mb-8 leading-[1.1]">
               <span className="word inline-block">Trade</span>{" "}
               <span className="word inline-block">Skills.</span>{" "}
@@ -457,16 +511,15 @@ export default function LandingPage() {
               </span>
             </h1>
 
-            {/* Description */}
             <p className="hero-desc text-xl md:text-2xl text-slate-600 mb-6 max-w-2xl mx-auto leading-relaxed">
-              Join the world's first decentralized skill exchange platform.
+              The world's first decentralized skill exchange platform. Learn
+              what you need by teaching what you know.
             </p>
 
-            {/* Interactive Typing Demo */}
-            <div className="hero-desc mb-10 flex items-center justify-center gap-2 text-lg md:text-xl text-slate-600">
+            <div className="hero-desc mb-10 flex items-center justify-center gap-2 text-lg md:text-xl text-slate-600 flex-wrap">
               <span>Learn</span>
               <div
-                className="relative inline-flex items-center px-4 py-2 rounded-lg bg-white border-2 border-dashed"
+                className="relative inline-flex items-center px-4 py-2 rounded-lg bg-white border-2 border-dashed shadow-lg min-w-[150px]"
                 style={{ borderColor: COLORS.accentLime }}
               >
                 <span
@@ -480,77 +533,100 @@ export default function LandingPage() {
               <span>by teaching what you know</span>
             </div>
 
-            {/* Buttons */}
             <div className="hero-btns flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
               <Button
                 onClick={handleGetStarted}
-                className="w-full sm:w-auto text-lg px-10"
+                className="w-full sm:w-auto text-lg px-10 shadow-2xl"
               >
                 Start Swapping <ArrowRight size={20} />
               </Button>
               <Button
                 variant="outline"
                 onClick={handleExplore}
-                className="w-full sm:w-auto text-lg px-10"
+                className="w-full sm:w-auto text-lg px-10 group"
               >
-                Explore Skills
+                Explore Skills{" "}
+                <PlayCircle
+                  size={20}
+                  className="group-hover:scale-110 transition-transform"
+                />
               </Button>
             </div>
 
-            {/* Hero Visual */}
             <div className="hero-visual relative mx-auto max-w-4xl h-[400px] hidden md:block">
-              {/* Central Hub */}
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-white rounded-full shadow-2xl flex items-center justify-center z-20">
                 <div
-                  className={`w-24 h-24 rounded-full bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center animate-spin-slow`}
+                  className={`w-24 h-24 rounded-full bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center`}
                 >
-                  <Repeat className="text-white w-12 h-12" />
+                  <Repeat
+                    className="text-white w-12 h-12 animate-spin"
+                    style={{ animationDuration: "8s" }}
+                  />
                 </div>
               </div>
 
-              {/* Orbiting Cards */}
-              <div className="floating-card-1 absolute left-0 top-10 bg-white p-4 rounded-2xl shadow-xl border border-slate-100 w-64 z-10">
+              <div className="floating-card-1 absolute left-0 top-10 bg-white p-5 rounded-2xl shadow-2xl border-2 border-purple-100 w-64 z-10 backdrop-blur-sm">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-2xl shadow-lg">
                     🎸
                   </div>
                   <div>
-                    <div className="font-bold text-slate-800">Alex</div>
-                    <div className="text-xs text-slate-500">Teaches Guitar</div>
+                    <div className="font-bold text-slate-800">
+                      Alex Rodriguez
+                    </div>
+                    <div className="text-xs text-slate-500">Guitar Expert</div>
                   </div>
                 </div>
-                <div className="text-sm text-slate-600 bg-slate-50 p-2 rounded-lg">
-                  "Looking for React help!"
+                <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                  "Need help with React hooks!"
                 </div>
               </div>
 
-              <div className="floating-card-2 absolute right-0 bottom-10 bg-white p-4 rounded-2xl shadow-xl border border-slate-100 w-64 z-10">
+              <div className="floating-card-2 absolute right-0 bottom-10 bg-white p-5 rounded-2xl shadow-2xl border-2 border-purple-100 w-64 z-10 backdrop-blur-sm">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-2xl shadow-lg">
                     💻
                   </div>
                   <div>
-                    <div className="font-bold text-slate-800">Sarah</div>
-                    <div className="text-xs text-slate-500">Teaches Coding</div>
+                    <div className="font-bold text-slate-800">Sarah Chen</div>
+                    <div className="text-xs text-slate-500">
+                      React Developer
+                    </div>
                   </div>
                 </div>
-                <div className="text-sm text-slate-600 bg-slate-50 p-2 rounded-lg">
-                  "I want to learn Guitar!"
+                <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                  "I want to learn Guitar! 🎵"
                 </div>
               </div>
 
-              {/* Connecting Lines (SVG) */}
-              <svg
-                className="absolute inset-0 w-full h-full pointer-events-none z-0"
-                style={{ overflow: "visible" }}
-              >
+              <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+                <defs>
+                  <linearGradient
+                    id="lineGradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#a855f7" stopOpacity="0.3" />
+                  </linearGradient>
+                </defs>
                 <path
                   d="M 200 100 Q 400 200 600 300"
                   fill="none"
-                  stroke="#cbd5e1"
-                  strokeWidth="2"
-                  strokeDasharray="8 8"
-                />
+                  stroke="url(#lineGradient)"
+                  strokeWidth="3"
+                  strokeDasharray="10 5"
+                >
+                  <animate
+                    attributeName="stroke-dashoffset"
+                    from="0"
+                    to="30"
+                    dur="2s"
+                    repeatCount="indefinite"
+                  />
+                </path>
               </svg>
             </div>
           </div>
@@ -558,25 +634,43 @@ export default function LandingPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="animate-section py-10 border-y border-slate-200 bg-white/50 backdrop-blur-sm">
+      <section className="py-16 border-y border-slate-200 bg-white/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { label: "Active Learners", value: "10K+", icon: Users },
-              { label: "Skills Shared", value: "500+", icon: BookOpen },
-              { label: "Money Saved", value: "$2M+", icon: TrendingUp },
-              { label: "Campuses", value: "50+", icon: Award },
+              {
+                label: "Active Learners",
+                value: 10000,
+                display: "10K+",
+                icon: Users,
+              },
+              {
+                label: "Skills Shared",
+                value: 500,
+                display: "500+",
+                icon: BookOpen,
+              },
+              {
+                label: "Money Saved",
+                value: 2000000,
+                display: "$2M+",
+                icon: TrendingUp,
+              },
+              { label: "Success Rate", value: 98, display: "98%", icon: Award },
             ].map((stat, i) => (
               <div key={i} className="text-center group cursor-default">
-                <div className="flex justify-center mb-2 text-slate-400 group-hover:text-purple-600 transition-colors">
-                  <stat.icon size={24} />
+                <div className="flex justify-center mb-3 text-slate-400 group-hover:text-purple-600 transition-colors transform group-hover:scale-110 duration-300">
+                  <stat.icon size={32} />
                 </div>
                 <div
-                  className={`text-3xl md:text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r ${COLORS.gradientPrimary}`}
+                  className={`text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r ${COLORS.gradientPrimary}`}
                 >
-                  {stat.value}
+                  <span className="stat-value" data-target={stat.value}>
+                    0
+                  </span>
+                  <span>{stat.display.replace(/\d+/g, "")}</span>
                 </div>
-                <div className="text-slate-600 font-medium text-sm mt-1">
+                <div className="text-slate-600 font-semibold text-sm mt-2">
                   {stat.label}
                 </div>
               </div>
@@ -586,12 +680,9 @@ export default function LandingPage() {
       </section>
 
       {/* Live Swaps Ticker */}
-      <section className="py-6 bg-gradient-to-r from-slate-100 to-slate-50 border-y border-slate-200 overflow-hidden">
-        <div className="flex items-center gap-2 mb-3 justify-center">
-          <div
-            className="w-2 h-2 rounded-full animate-pulse"
-            style={{ backgroundColor: COLORS.accentLime }}
-          />
+      <section className="py-8 bg-gradient-to-r from-slate-100 via-purple-50 to-slate-100 border-y border-slate-200 overflow-hidden">
+        <div className="flex items-center gap-2 mb-4 justify-center">
+          <div className="w-3 h-3 rounded-full animate-pulse bg-green-500 shadow-lg shadow-green-500/50" />
           <span className="text-sm font-bold text-slate-700 uppercase tracking-wider">
             Live Swaps Happening Now
           </span>
@@ -601,32 +692,11 @@ export default function LandingPage() {
             {[...LIVE_SWAPS, ...LIVE_SWAPS].map((swap, i) => (
               <div
                 key={i}
-                className="mx-4 inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-slate-200"
+                className="mx-4 inline-flex items-center gap-3 px-5 py-3 bg-white rounded-full shadow-md border-2 border-purple-100 hover:scale-105 transition-transform"
               >
-                <span className="font-semibold text-slate-700">
-                  {swap.from}
-                </span>
-                <span className="text-lg">{swap.emoji}</span>
-                <span className="text-slate-500 text-sm">
-                  {swap.skill1} ↔ {swap.skill2}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div
-            className="absolute top-0 flex animate-marquee whitespace-nowrap"
-            style={{ animationDelay: "15s" }}
-          >
-            {[...LIVE_SWAPS, ...LIVE_SWAPS].map((swap, i) => (
-              <div
-                key={i}
-                className="mx-4 inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-slate-200"
-              >
-                <span className="font-semibold text-slate-700">
-                  {swap.from}
-                </span>
-                <span className="text-lg">{swap.emoji}</span>
-                <span className="text-slate-500 text-sm">
+                <span className="font-bold text-slate-700">{swap.from}</span>
+                <span className="text-xl">{swap.emoji}</span>
+                <span className="text-slate-500 text-sm font-medium">
                   {swap.skill1} ↔ {swap.skill2}
                 </span>
               </div>
@@ -635,105 +705,146 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section - Bento Grid */}
-      <section id="features" className="py-24 relative">
+      {/* Features Section */}
+      <section
+        id="features"
+        className="py-32 relative bg-gradient-to-b from-white to-slate-50"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="features-header text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+          <div className="features-header text-center mb-20">
+            <div className="inline-block mb-4 px-4 py-2 rounded-full bg-purple-100 text-purple-600 font-semibold text-sm">
+              FEATURES
+            </div>
+            <h2 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
               Why Choose SkillSphere?
             </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Break free from expensive courses. Experience a community-driven
-              way to master new skills.
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+              Break free from expensive courses. Experience a revolutionary,
+              community-driven way to master new skills.
             </p>
           </div>
 
-          {/* Bento Grid Layout */}
-          <div className="features-grid grid grid-cols-1 md:grid-cols-6 gap-6">
-            {/* Large Feature - Smart Matching (2x2) */}
-            <div className="feature-card md:col-span-4 md:row-span-2 bg-gradient-to-br from-blue-50 to-purple-50 p-10 rounded-3xl shadow-xl border-2 border-purple-200 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-300/20 rounded-full blur-3xl" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div className="feature-card md:col-span-2 md:row-span-2 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-12 rounded-3xl shadow-2xl border-2 border-purple-200 hover:shadow-purple-300/50 transition-all duration-500 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-400/10 rounded-full blur-3xl group-hover:bg-purple-400/20 transition-all" />
               <div className="relative z-10">
                 <div
-                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center mb-6`}
+                  className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center mb-6 shadow-xl transform group-hover:rotate-12 transition-transform`}
                 >
-                  <Zap className="text-white w-8 h-8" />
+                  <Cpu className="text-white w-10 h-10" />
                 </div>
-                <h3 className="text-3xl font-bold text-slate-900 mb-4">
-                  Smart Matching
+                <h3 className="text-4xl font-bold text-slate-900 mb-4">
+                  AI-Powered Matching
                 </h3>
                 <p className="text-lg text-slate-600 leading-relaxed mb-6">
-                  Our AI connects you with learners who need your skills and
-                  have the skills you want. Get matched based on skill level,
-                  availability, and learning goals.
+                  Our advanced algorithm analyzes your skills, learning goals,
+                  availability, and personality to find your perfect learning
+                  partner. Get instant compatibility scores and suggested lesson
+                  plans.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {["AI-Powered", "Instant Match", "Compatibility Score"].map(
-                    (tag, i) => (
-                      <span
-                        key={i}
-                        className="px-3 py-1 rounded-full text-sm font-medium border-2 border-dashed"
-                        style={{
-                          borderColor: COLORS.accentLime,
-                          color: COLORS.accentLime,
-                        }}
-                      >
-                        {tag}
-                      </span>
-                    )
-                  )}
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    "Smart Recommendations",
+                    "Instant Compatibility",
+                    "Personalized Plans",
+                  ].map((tag, i) => (
+                    <span
+                      key={i}
+                      className="px-4 py-2 rounded-full text-sm font-bold bg-white shadow-md border-2 border-purple-200 text-purple-600 hover:scale-105 transition-transform"
+                    >
+                      <Check size={14} className="inline mr-1" />
+                      {tag}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* Medium Feature - Verified Community */}
-            <div className="feature-card md:col-span-2 bg-white p-8 rounded-3xl shadow-xl border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+            <div className="feature-card bg-white p-8 rounded-3xl shadow-xl border-2 border-slate-100 hover:shadow-2xl hover:border-purple-200 transition-all duration-500 group">
               <div
-                className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center mb-6`}
+                className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center mb-6 shadow-lg transform group-hover:scale-110 transition-transform`}
               >
-                <Shield className="text-white w-7 h-7" />
+                <Shield className="text-white w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">
                 Verified Community
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Student ID verification ensures a safe, trusted environment for
-                all exchanges.
+                Student ID verification and peer reviews ensure a safe, trusted
+                environment for all exchanges.
               </p>
             </div>
 
-            {/* Medium Feature - Structured Learning */}
-            <div className="feature-card md:col-span-2 bg-white p-8 rounded-3xl shadow-xl border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+            <div className="feature-card bg-white p-8 rounded-3xl shadow-xl border-2 border-slate-100 hover:shadow-2xl hover:border-purple-200 transition-all duration-500 group">
               <div
-                className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center mb-6`}
+                className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center mb-6 shadow-lg transform group-hover:scale-110 transition-transform`}
               >
-                <Target className="text-white w-7 h-7" />
+                <Target className="text-white w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
-                Structured Learning
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                Track Progress
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Built-in roadmaps and session trackers ensure you reach your
-                goals.
+                Built-in roadmaps, session trackers, and milestone celebrations
+                keep you motivated.
               </p>
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Clock,
+                title: "Flexible Scheduling",
+                desc: "Book sessions that fit your busy student life with our smart calendar",
+              },
+              {
+                icon: Globe,
+                title: "Global Network",
+                desc: "Connect with passionate learners from 50+ universities worldwide",
+              },
+              {
+                icon: Heart,
+                title: "Free Forever",
+                desc: "No hidden fees, subscriptions, or credit card required. Ever.",
+              },
+            ].map((feature, i) => (
+              <div
+                key={i}
+                className="feature-card bg-white p-8 rounded-3xl shadow-xl border-2 border-slate-100 hover:shadow-2xl hover:border-purple-200 transition-all duration-500 group"
+              >
+                <div
+                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center mb-6 shadow-lg transform group-hover:scale-110 transition-transform`}
+                >
+                  <feature.icon className="text-white w-8 h-8" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-slate-600 leading-relaxed">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+
           {/* University Badges */}
-          <div className="mt-16 text-center">
-            <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-6">
+          <div className="mt-20 text-center">
+            <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-8">
               Trusted by students at 50+ Universities
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-8 opacity-50">
+            <div className="flex flex-wrap justify-center items-center gap-12 opacity-50">
               {[
-                "🎓 Harvard",
-                "🎓 MIT",
-                "🎓 Stanford",
-                "🎓 Berkeley",
-                "🎓 Yale",
+                "Harvard",
+                "MIT",
+                "Stanford",
+                "Berkeley",
+                "Yale",
+                "Princeton",
               ].map((uni, i) => (
-                <div key={i} className="text-2xl font-bold text-slate-400">
-                  {uni}
+                <div
+                  key={i}
+                  className="text-2xl font-bold text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  🎓 {uni}
                 </div>
               ))}
             </div>
@@ -744,81 +855,286 @@ export default function LandingPage() {
       {/* How It Works */}
       <section
         id="how-it-works"
-        className="py-24 bg-white relative overflow-hidden"
+        className="py-32 bg-slate-50 relative overflow-hidden"
       >
-        <div className="absolute inset-0 bg-slate-50/50 skew-y-3 transform origin-top-left scale-110" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-50/30 to-transparent" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="steps-header text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-              How Bartering Works
+          <div className="steps-header text-center mb-24">
+            <div className="inline-block mb-4 px-4 py-2 rounded-full bg-blue-100 text-blue-600 font-semibold text-sm">
+              HOW IT WORKS
+            </div>
+            <h2 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
+              Start Learning in 3 Easy Steps
             </h2>
-            <p className="text-xl text-slate-600">
-              It's as simple as 1-2-3. No hidden fees, just pure knowledge
-              exchange.
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              No hidden fees, no commitments. Just pure knowledge exchange
+              between passionate learners.
             </p>
           </div>
 
-          <div className="steps-container space-y-20">
+          <div className="steps-container space-y-32">
             {[
               {
                 step: "01",
-                title: "List Your Skills",
-                desc: "Create a profile highlighting what you're good at (e.g., Math, Photoshop) and what you want to learn.",
+                title: "Create Your Profile",
+                desc: "Tell us what you're passionate about teaching and what you want to learn. Add your availability, skill level, and learning preferences. Our AI will start finding your perfect matches immediately.",
                 image:
                   "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop&q=80",
-                alt: "Students collaborating and sharing skills",
-                align: "left",
+                features: [
+                  "List unlimited skills",
+                  "Set your schedule",
+                  "Add portfolio samples",
+                ],
               },
               {
                 step: "02",
-                title: "Find Your Match",
-                desc: "Browse profiles or let our algorithm suggest perfect barter partners based on compatibility.",
+                title: "Get Matched Instantly",
+                desc: "Browse smart recommendations or let our algorithm suggest perfect barter partners. See compatibility scores, reviews, and sample lesson plans before you connect.",
                 image:
                   "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=600&fit=crop&q=80",
-                alt: "Person searching and connecting with others",
-                align: "right",
+                features: [
+                  "AI compatibility matching",
+                  "Verified student profiles",
+                  "Real-time availability",
+                ],
               },
               {
                 step: "03",
-                title: "Connect & Swap",
-                desc: "Schedule a session using our integrated calendar. Teach your session, then become the student.",
+                title: "Learn & Teach",
+                desc: "Schedule sessions using our integrated calendar. Meet online or in person. Track your progress with built-in roadmaps and earn badges as you master new skills.",
                 image:
                   "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&h=600&fit=crop&q=80",
-                alt: "Students teaching and learning together",
-                align: "left",
+                features: [
+                  "Video call integration",
+                  "Progress tracking",
+                  "Achievement system",
+                ],
               },
             ].map((item, i) => (
               <div
                 key={i}
-                className={`step-card flex flex-col md:flex-row items-center gap-12 ${
-                  item.align === "right" ? "md:flex-row-reverse" : ""
-                }`}
+                className={`step-card flex flex-col ${
+                  i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+                } items-center gap-16`}
               >
-                <div className="flex-1 text-center md:text-left">
-                  <div className="inline-block px-4 py-1 rounded-full bg-blue-100 text-blue-600 font-bold text-sm mb-4">
-                    STEP {item.step}
+                <div className="flex-1 text-center md:text-left step-content">
+                  <div className="step-number inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 text-white font-black text-3xl mb-6 shadow-2xl">
+                    {item.step}
                   </div>
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4">
+                  <h3 className="text-4xl font-bold text-slate-900 mb-4">
                     {item.title}
                   </h3>
-                  <p className="text-lg text-slate-600 leading-relaxed">
+                  <p className="text-lg text-slate-600 leading-relaxed mb-6">
                     {item.desc}
                   </p>
+                  <div className="space-y-3">
+                    {item.features.map((feature, j) => (
+                      <div
+                        key={j}
+                        className="flex items-center gap-3 justify-center md:justify-start"
+                      >
+                        <div
+                          className={`w-6 h-6 rounded-full bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center flex-shrink-0`}
+                        >
+                          <Check className="text-white w-4 h-4" />
+                        </div>
+                        <span className="text-slate-700 font-medium">
+                          {feature}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex-1 w-full">
+                <div className="flex-1 w-full step-image">
                   <div className="relative group">
                     <div
-                      className={`absolute inset-0 bg-gradient-to-r ${COLORS.gradientPrimary} blur-2xl opacity-20 rounded-3xl group-hover:opacity-30 transition-opacity`}
+                      className={`absolute inset-0 bg-gradient-to-r ${COLORS.gradientPrimary} blur-3xl opacity-20 rounded-3xl group-hover:opacity-30 transition-opacity`}
                     />
-                    <div className="relative bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden aspect-video">
+                    <div className="relative bg-white rounded-3xl shadow-2xl border-2 border-purple-100 overflow-hidden aspect-video">
                       <img
                         src={item.image}
-                        alt={item.alt}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        alt={item.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         loading="lazy"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-purple-900/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full font-bold text-purple-600 text-sm shadow-lg">
+                        Step {item.step}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Process Infographic */}
+          <div className="mt-32 bg-white rounded-3xl p-12 shadow-2xl border-2 border-slate-100">
+            <h3 className="text-3xl font-bold text-center text-slate-900 mb-12">
+              The Perfect Exchange Process
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-center">
+              {[
+                {
+                  icon: Users,
+                  label: "Match",
+                  color: "from-blue-500 to-blue-600",
+                },
+                {
+                  icon: MessageCircle,
+                  label: "Connect",
+                  color: "from-purple-500 to-purple-600",
+                },
+                {
+                  icon: BookOpen,
+                  label: "Schedule",
+                  color: "from-pink-500 to-pink-600",
+                },
+                {
+                  icon: Lightbulb,
+                  label: "Learn",
+                  color: "from-orange-500 to-orange-600",
+                },
+                {
+                  icon: Trophy,
+                  label: "Master",
+                  color: "from-green-500 to-green-600",
+                },
+              ].map((item, i) => (
+                <div key={i} className="text-center relative">
+                  <div
+                    className={`w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-4 shadow-lg transform hover:scale-110 transition-transform`}
+                  >
+                    <item.icon className="text-white w-10 h-10" />
+                  </div>
+                  <p className="font-bold text-slate-900">{item.label}</p>
+                  {i < 4 && (
+                    <div className="hidden md:block absolute top-10 left-full w-full h-0.5 bg-gradient-to-r from-slate-300 to-transparent" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section
+        id="community"
+        className="py-32 bg-white relative overflow-hidden"
+      >
+        <div className="absolute top-0 left-0 w-full h-full opacity-5">
+          <div className="absolute top-10 left-10 w-64 h-64 bg-purple-500 rounded-full blur-3xl" />
+          <div className="absolute bottom-10 right-10 w-64 h-64 bg-blue-500 rounded-full blur-3xl" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-20">
+            <div className="inline-block mb-4 px-4 py-2 rounded-full bg-purple-100 text-purple-600 font-semibold text-sm">
+              SUCCESS STORIES
+            </div>
+            <h2 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
+              Real Students, Real Results
+            </h2>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              See how SkillSphere is transforming the way students learn on
+              campuses worldwide.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Michael Chen",
+                role: "Computer Science Major • MIT",
+                content:
+                  "I was struggling with Calculus but excelled at Java. Found a Math major who wanted to learn coding. We both got A's! The structured approach and progress tracking kept us accountable.",
+                avatar: "MC",
+                rating: 5,
+                saved: "$1,200",
+              },
+              {
+                name: "Priya Patel",
+                role: "Design Student • Stanford",
+                content:
+                  "Taught Photoshop to a Marketing student who helped me with my resume and personal branding. The match was perfect - we had similar schedules and learning styles.",
+                avatar: "PP",
+                rating: 5,
+                saved: "$800",
+              },
+              {
+                name: "James Wilson",
+                role: "Business Major • Harvard",
+                content:
+                  "Learning Spanish from a native speaker while teaching Excel and data analysis. It's incredible how much faster you learn when there's a real exchange happening.",
+                avatar: "JW",
+                rating: 5,
+                saved: "$1,500",
+              },
+              {
+                name: "Sofia Rodriguez",
+                role: "Music Student • Berkeley",
+                content:
+                  "I traded guitar lessons for help with my chemistry coursework. My tutor was patient and the platform made scheduling so easy. Passed with an A-!",
+                avatar: "SR",
+                rating: 5,
+                saved: "$950",
+              },
+              {
+                name: "David Kim",
+                role: "Engineering • Georgia Tech",
+                content:
+                  "The AI matching is spot-on. Found someone with the exact skills I needed who wanted to learn what I could teach. We've been meeting twice a week for 3 months now.",
+                avatar: "DK",
+                rating: 5,
+                saved: "$2,100",
+              },
+              {
+                name: "Emma Thompson",
+                role: "Psychology Major • Yale",
+                content:
+                  "Traded French tutoring for Python lessons. The community is incredibly supportive and the verification process made me feel safe. Highly recommend!",
+                avatar: "ET",
+                rating: 5,
+                saved: "$1,400",
+              },
+            ].map((story, i) => (
+              <div
+                key={i}
+                className="testimonial-card bg-gradient-to-br from-white to-slate-50 p-8 rounded-3xl shadow-xl border-2 border-slate-100 hover:shadow-2xl hover:border-purple-200 transition-all duration-500 group"
+              >
+                <div className="flex items-center gap-1 mb-4 text-yellow-400">
+                  {[...Array(story.rating)].map((_, j) => (
+                    <Star
+                      key={j}
+                      fill="currentColor"
+                      size={18}
+                      className="drop-shadow-sm"
+                    />
+                  ))}
+                </div>
+                <p className="text-slate-700 text-base leading-relaxed mb-6 italic">
+                  "{story.content}"
+                </p>
+                <div className="flex items-center justify-between border-t border-slate-200 pt-6">
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`w-14 h-14 rounded-full bg-gradient-to-br ${COLORS.gradientPrimary} text-white flex items-center justify-center font-bold text-lg shadow-lg`}
+                    >
+                      {story.avatar}
+                    </div>
+                    <div>
+                      <div className="font-bold text-slate-900">
+                        {story.name}
+                      </div>
+                      <div className="text-slate-500 text-sm">{story.role}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-slate-500 mb-1">Saved</div>
+                    <div className="text-lg font-bold text-green-600">
+                      {story.saved}
                     </div>
                   </div>
                 </div>
@@ -828,185 +1144,328 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section id="community" className="animate-section py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Stats Showcase */}
+      <section className="py-24 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full blur-3xl animate-pulse" />
+          <div
+            className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse"
+            style={{ animationDelay: "1s" }}
+          />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-              Student Stories
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              The SkillSphere Impact
             </h2>
-            <p className="text-xl text-slate-600">
-              See how SkillSphere is changing the way students learn on campus.
+            <p className="text-xl text-white/80">
+              Making quality education accessible to everyone
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              {
-                name: "Michael Chen",
-                role: "CS Major",
-                content:
-                  "I was failing Calculus but good at Java. Found a Math major who wanted to learn coding. We both got A's!",
-                avatar: "MC",
-              },
-              {
-                name: "Priya Patel",
-                role: "Design Student",
-                content:
-                  "Taught Photoshop to a Marketing student who helped me with my resume. Best trade ever.",
-                avatar: "PP",
-              },
-            ].map((story, i) => (
-              <div
-                key={i}
-                className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100 hover:shadow-xl transition-shadow"
-              >
-                <div className="flex items-center gap-1 mb-4 text-yellow-400">
-                  {[...Array(5)].map((_, j) => (
-                    <Star key={j} fill="currentColor" size={20} />
-                  ))}
-                </div>
-                <p className="text-slate-700 text-lg italic mb-6">
-                  "{story.content}"
-                </p>
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${COLORS.gradientPrimary} text-white flex items-center justify-center font-bold`}
-                  >
-                    {story.avatar}
-                  </div>
-                  <div>
-                    <div className="font-bold text-slate-900">{story.name}</div>
-                    <div className="text-slate-500 text-sm">{story.role}</div>
+              { value: "50M+", label: "Learning Hours", icon: Clock },
+              { value: "98%", label: "Satisfaction Rate", icon: Heart },
+              { value: "$5M+", label: "Student Savings", icon: TrendingUp },
+              { value: "150+", label: "Countries", icon: Globe },
+            ].map((stat, i) => (
+              <div key={i} className="text-center group">
+                <div className="flex justify-center mb-4">
+                  <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/20 transition-all group-hover:scale-110 duration-300">
+                    <stat.icon className="w-8 h-8" />
                   </div>
                 </div>
+                <div className="text-5xl font-black mb-2">{stat.value}</div>
+                <div className="text-white/70 font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* Comparison Section */}
+      <section className="py-32 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+              Why SkillSphere Beats Traditional Learning
+            </h2>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              Compare the old way of learning with the SkillSphere advantage
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Traditional Learning */}
+            <div className="bg-white p-8 rounded-3xl shadow-lg border-2 border-red-200">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 mx-auto bg-red-100 rounded-2xl flex items-center justify-center mb-4">
+                  <X className="w-8 h-8 text-red-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900">
+                  Traditional Courses
+                </h3>
+              </div>
+              <ul className="space-y-4">
+                {[
+                  "Pay $50-200 per hour for tutors",
+                  "Rigid schedules don't fit student life",
+                  "One-way learning with no exchange",
+                  "Generic teaching methods",
+                  "No community or peer support",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-slate-600">
+                    <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* SkillSphere */}
+            <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-3xl shadow-xl border-2 border-purple-300 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-300/20 rounded-full blur-2xl" />
+              <div className="text-center mb-6 relative z-10">
+                <div
+                  className={`w-16 h-16 mx-auto bg-gradient-to-br ${COLORS.gradientPrimary} rounded-2xl flex items-center justify-center mb-4`}
+                >
+                  <Check className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900">
+                  SkillSphere Way
+                </h3>
+              </div>
+              <ul className="space-y-4 relative z-10">
+                {[
+                  "100% Free - Exchange skills, not money",
+                  "Flexible scheduling around YOUR time",
+                  "Two-way learning: teach & learn",
+                  "Personalized AI matching",
+                  "Vibrant community of 10K+ students",
+                ].map((item, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-3 text-slate-700 font-medium"
+                  >
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="animate-section py-24 px-4">
+      <section className="cta-section py-32 px-4 bg-slate-50">
         <div className="max-w-5xl mx-auto">
-          <div
-            className={`relative rounded-[3rem] p-12 md:p-24 text-center overflow-hidden shadow-2xl`}
-          >
+          <div className="relative rounded-[3rem] p-16 md:p-24 text-center overflow-hidden shadow-2xl">
             <div
               className={`absolute inset-0 bg-gradient-to-br ${COLORS.gradientPrimary}`}
             />
 
-            {/* Decorative Circles */}
-            <div className="absolute top-0 left-0 w-64 h-64 bg-white opacity-10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
-            <div className="absolute bottom-0 right-0 w-64 h-64 bg-black opacity-10 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl" />
+            <div className="absolute top-0 left-0 w-96 h-96 bg-white opacity-10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl animate-pulse" />
+            <div
+              className="absolute bottom-0 right-0 w-96 h-96 bg-black opacity-10 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl animate-pulse"
+              style={{ animationDelay: "1s" }}
+            />
 
             <div className="relative z-10 text-white">
-              <h2 className="text-4xl md:text-6xl font-bold mb-6">
+              <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-sm mb-8">
+                <Rocket className="w-5 h-5" />
+                <span className="font-semibold">
+                  Join 10,000+ Students Today
+                </span>
+              </div>
+
+              <h2 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
                 Ready to Skill Up?
               </h2>
-              <p className="text-xl md:text-2xl mb-10 text-white/90 max-w-2xl mx-auto">
-                Join thousands of students saving money and mastering new skills
-                today.
+              <p className="text-xl md:text-2xl mb-12 text-white/90 max-w-2xl mx-auto leading-relaxed">
+                Start learning for free. No credit card required. Join the
+                future of education.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                 <Button
                   variant="white"
                   onClick={handleGetStarted}
-                  className="text-lg px-10 py-4 font-bold text-purple-600"
+                  className="text-lg px-12 py-5 font-bold text-purple-600 shadow-2xl hover:shadow-white/20"
                 >
-                  {isAuthenticated ? "Go to Dashboard" : "Join Now - It's Free"}
+                  {isAuthenticated ? "Go to Dashboard" : "Get Started Free"}{" "}
+                  <ArrowRight size={20} />
                 </Button>
+                <button
+                  onClick={handleExplore}
+                  className="px-12 py-5 rounded-2xl font-bold text-lg text-white border-2 border-white/30 hover:bg-white/10 backdrop-blur-sm transition-all hover:scale-105"
+                >
+                  Explore Skills
+                </button>
               </div>
-              <p className="mt-6 text-sm text-white/70">
-                No credit card required. Free for students.
-              </p>
+
+              <div className="flex items-center justify-center gap-8 text-sm text-white/80 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Check size={16} />
+                  <span>Free Forever</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check size={16} />
+                  <span>No Credit Card</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check size={16} />
+                  <span>Join in 2 Minutes</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-300 py-12 border-t border-slate-800">
+      <footer className="bg-slate-900 text-slate-300 py-16 border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-12">
             <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center gap-2 mb-4 text-white">
+              <div className="flex items-center gap-2 mb-6 text-white">
                 <div
-                  className={`w-8 h-8 rounded-lg bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center`}
+                  className={`w-10 h-10 rounded-xl bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center`}
                 >
-                  <Repeat className="text-white w-5 h-5" />
+                  <Zap className="text-white w-6 h-6" fill="currentColor" />
                 </div>
                 <span className="font-bold text-2xl">SkillSphere</span>
               </div>
-              <p className="text-slate-400 max-w-xs">
+              <p className="text-slate-400 mb-6 leading-relaxed">
                 The world's first decentralized skill exchange platform built
-                exclusively for the student community.
+                exclusively for students. Learn anything by teaching what you
+                know.
               </p>
+              <div className="flex gap-4">
+                {["Twitter", "LinkedIn", "Instagram", "Discord"].map(
+                  (social) => (
+                    <a
+                      key={social}
+                      href="#"
+                      className="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition-colors"
+                    >
+                      <span className="text-xs font-bold">{social[0]}</span>
+                    </a>
+                  )
+                )}
+              </div>
             </div>
 
             <div>
-              <h4 className="text-white font-bold mb-4">Platform</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Browse Skills
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    How it Works
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Trust & Safety
-                  </a>
-                </li>
+              <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">
+                Platform
+              </h4>
+              <ul className="space-y-3 text-sm">
+                {[
+                  "Browse Skills",
+                  "How it Works",
+                  "Success Stories",
+                  "Mobile App",
+                ].map((link) => (
+                  <li key={link}>
+                    <a
+                      href="#"
+                      className="hover:text-white transition-colors flex items-center gap-2 group"
+                    >
+                      <ChevronRight
+                        size={14}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      />
+                      {link}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 
             <div>
-              <h4 className="text-white font-bold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Terms of Service
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Cookie Policy
-                  </a>
-                </li>
+              <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">
+                Resources
+              </h4>
+              <ul className="space-y-3 text-sm">
+                {["Help Center", "Community Forum", "Blog", "API Docs"].map(
+                  (link) => (
+                    <li key={link}>
+                      <a
+                        href="#"
+                        className="hover:text-white transition-colors flex items-center gap-2 group"
+                      >
+                        <ChevronRight
+                          size={14}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        />
+                        {link}
+                      </a>
+                    </li>
+                  )
+                )}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">
+                Legal
+              </h4>
+              <ul className="space-y-3 text-sm">
+                {[
+                  "Privacy Policy",
+                  "Terms of Service",
+                  "Cookie Policy",
+                  "Trust & Safety",
+                ].map((link) => (
+                  <li key={link}>
+                    <a
+                      href="#"
+                      className="hover:text-white transition-colors flex items-center gap-2 group"
+                    >
+                      <ChevronRight
+                        size={14}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      />
+                      {link}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
-          <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
-            <p>© 2025 SkillSphere Inc. All rights reserved.</p>
-            <div className="flex gap-6">
-              <a href="#" className="hover:text-white">
-                Twitter
-              </a>
-              <a href="#" className="hover:text-white">
-                LinkedIn
-              </a>
-              <a href="#" className="hover:text-white">
-                Instagram
-              </a>
+
+          <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+            <p>
+              © 2025 SkillSphere Inc. All rights reserved. Made with{" "}
+              <Heart
+                size={14}
+                className="inline text-red-500"
+                fill="currentColor"
+              />{" "}
+              by students, for students.
+            </p>
+            <div className="flex items-center gap-6">
+              <span className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                All systems operational
+              </span>
             </div>
           </div>
         </div>
       </footer>
+
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          animation: marquee 30s linear infinite;
+        }
+      `}</style>
     </div>
   );
 }
