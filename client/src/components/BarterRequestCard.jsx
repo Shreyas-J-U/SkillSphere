@@ -1,57 +1,53 @@
+// BarterRequestCard.jsx – cleaned up version
 import { motion } from "framer-motion";
 import { MessageSquare, CheckCircle, XCircle, Clock, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import RatingModal from "./RatingModal";
+import api from "../utils/api";
 
 const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
   const navigate = useNavigate();
   const isSender = type === "sent";
   const [showRatingModal, setShowRatingModal] = useState(false);
-  const [canRate, setCanRate] = useState(false);
+  const [canRate, setCanRate] = useState(null);
   const [otherParticipant, setOtherParticipant] = useState(null);
   const [completing, setCompleting] = useState(false);
 
   const isCompleted = request.status === "completed";
 
-  useEffect(() => {
-    if (isCompleted) {
-      checkCanRate();
-    }
-  }, [request._id, isCompleted]);
-
+  // ---------------------------------------------------
+  // Check if the current user can rate the other party
+  // ---------------------------------------------------
   const checkCanRate = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/ratings/can-rate/${request._id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await api.get(`/ratings/can-rate/${request._id}`);
       setCanRate(response.data.canRate);
       if (response.data.otherParticipant) {
         setOtherParticipant(response.data.otherParticipant);
       }
     } catch (error) {
       console.error("Error checking rating eligibility:", error);
+      setCanRate(false);
     }
   };
 
+  useEffect(() => {
+    if (isCompleted) checkCanRate();
+  }, [request._id, isCompleted]);
+
+  // ---------------------------------------------------
+  // Mark barter as complete (calls the API via the shared `api` instance)
+  // ---------------------------------------------------
   const handleCompleteRequest = async () => {
     setCompleting(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/barters/${request._id}/complete`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await api.put(`/barters/${request._id}/complete`);
       if (onUpdate) {
         onUpdate(response.data);
+        // Re‑evaluate rating eligibility now that the barter is marked complete
+        checkCanRate();
       }
     } catch (error) {
       console.error("Error completing request:", error);
@@ -61,14 +57,18 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
     }
   };
 
+  // ---------------------------------------------------
+  // Rating modal handling
+  // ---------------------------------------------------
   const handleRatingSubmitted = () => {
     setCanRate(false);
     setShowRatingModal(false);
-    if (onUpdate) {
-      onUpdate({ ...request });
-    }
+    if (onUpdate) onUpdate({ ...request });
   };
 
+  // ---------------------------------------------------
+  // UI helpers – status badge
+  // ---------------------------------------------------
   const getStatusBadge = (status) => {
     const badges = {
       pending: {
@@ -92,10 +92,8 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
         text: "Completed",
       },
     };
-
     const badge = badges[status];
     const Icon = badge.icon;
-
     return (
       <span
         className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 ${badge.class}`}
@@ -116,6 +114,7 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
         whileHover={{ y: -5, scale: 1.02 }}
         className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
       >
+        {/* Header – user info and status badge */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
             <img
@@ -141,6 +140,7 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
           {getStatusBadge(request.status)}
         </div>
 
+        {/* Offer / request details */}
         <div className="space-y-3 mb-4">
           <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
             <p className="text-sm text-gray-600 mb-1">
@@ -150,7 +150,6 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
               {request.skillOffered}
             </p>
           </div>
-
           <div className="bg-purple-50 p-3 rounded-xl border border-purple-100">
             <p className="text-sm text-gray-600 mb-1">
               {isSender ? "You requested:" : "They requested:"}
@@ -159,7 +158,6 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
               {request.skillRequested}
             </p>
           </div>
-
           {request.message && (
             <div className="bg-gray-50 p-3 rounded-xl border border-gray-200">
               <p className="text-sm text-gray-600 mb-1">Message:</p>
@@ -168,7 +166,9 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
           )}
         </div>
 
-        {request.session &&
+        {/* Session status */}
+        {!isCompleted &&
+          request.session &&
           (request.session.status === "scheduled" ||
             request.session.status === "in-progress") && (
             <div
@@ -181,8 +181,8 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
               {request.session.status === "in-progress" ? (
                 <>
                   <span className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
                   </span>
                   Session Started - Join Now!
                 </>
@@ -195,7 +195,9 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
             </div>
           )}
 
+        {/* Action buttons */}
         <div className="flex gap-2">
+          {/* Pending – accept / reject */}
           {request.status === "pending" && !isSender && (
             <>
               <motion.button
@@ -204,8 +206,7 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
                 whileTap={{ scale: 0.98 }}
                 className="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all flex items-center justify-center gap-2"
               >
-                <CheckCircle size={18} />
-                Accept
+                <CheckCircle size={18} /> Accept
               </motion.button>
               <motion.button
                 onClick={() => onReject(request._id)}
@@ -213,12 +214,12 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
                 whileTap={{ scale: 0.98 }}
                 className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-all flex items-center justify-center gap-2"
               >
-                <XCircle size={18} />
-                Reject
+                <XCircle size={18} /> Reject
               </motion.button>
             </>
           )}
 
+          {/* Accepted – chat + possible completion */}
           {request.status === "accepted" && (
             <>
               <motion.button
@@ -227,8 +228,7 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
                 whileTap={{ scale: 0.98 }}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
               >
-                <MessageSquare size={18} />
-                Chat
+                <MessageSquare size={18} /> Chat
                 {request.unreadCount > 0 && (
                   <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
                     {request.unreadCount}
@@ -241,19 +241,13 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
                 const hasCompleted = isSender
                   ? request.senderCompleted
                   : request.receiverCompleted;
-                const partnerCompleted = isSender
-                  ? request.receiverCompleted
-                  : request.senderCompleted;
-
                 if (hasCompleted) {
                   return (
                     <div className="px-6 py-3 bg-yellow-100 text-yellow-700 rounded-xl font-semibold flex items-center justify-center gap-2 border border-yellow-200">
-                      <Clock size={18} />
-                      Waiting for partner
+                      <Clock size={18} /> Waiting for partner
                     </div>
                   );
                 }
-
                 return (
                   <motion.button
                     onClick={handleCompleteRequest}
@@ -270,43 +264,37 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
             </>
           )}
 
-          {isCompleted && canRate && (
+          {/* Completed – rating */}
+          {/* Completed – rating */}
+          {isCompleted && canRate === true && (
             <motion.button
               onClick={() => setShowRatingModal(true)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="w-full px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
             >
-              <Star size={18} />
-              Rate Experience
+              <Star size={18} /> Rate Experience
             </motion.button>
           )}
-
-          {isCompleted && !canRate && (
+          {isCompleted && canRate === false && (
             <div className="w-full px-6 py-3 bg-gray-100 text-gray-600 rounded-xl flex items-center justify-center gap-2">
               <CheckCircle size={18} className="text-green-600" />
               <span>Rated</span>
             </div>
           )}
         </div>
-
-        <p className="text-xs text-gray-400 mt-3">
-          {new Date(request.createdAt).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
       </motion.div>
 
-      {/* Rating Modal */}
-      <RatingModal
-        isOpen={showRatingModal}
-        onClose={() => setShowRatingModal(false)}
-        barterRequest={request}
-        otherUser={otherParticipant || otherUser}
-        onRatingSubmitted={handleRatingSubmitted}
-      />
+      {/* Rating modal */}
+      {showRatingModal && (
+        <RatingModal
+          isOpen={showRatingModal}
+          barterRequest={request}
+          otherUser={otherParticipant}
+          onClose={() => setShowRatingModal(false)}
+          onRatingSubmitted={handleRatingSubmitted}
+        />
+      )}
     </>
   );
 };
