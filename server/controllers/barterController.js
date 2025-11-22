@@ -1,9 +1,12 @@
-import BarterRequest from '../models/BarterRequest.js';
-import User from '../models/User.js';
-import Chat from '../models/Chat.js';
-import Message from '../models/Message.js';
-import Session from '../models/Session.js';
-import { sendBarterRequestEmail, sendStatusUpdateEmail } from '../utils/emailService.js';
+import BarterRequest from "../models/BarterRequest.js";
+import User from "../models/User.js";
+import Chat from "../models/Chat.js";
+import Message from "../models/Message.js";
+import Session from "../models/Session.js";
+import {
+  sendBarterRequestEmail,
+  sendStatusUpdateEmail,
+} from "../utils/emailService.js";
 
 // @desc    Create barter request
 // @route   POST /api/barters
@@ -15,18 +18,20 @@ export const createBarterRequest = async (req, res) => {
     // Check if receiver exists
     const receiver = await User.findById(receiverId);
     if (!receiver) {
-      return res.status(404).json({ message: 'Receiver not found' });
+      return res.status(404).json({ message: "Receiver not found" });
     }
 
     // Check if request already exists
     const existingRequest = await BarterRequest.findOne({
       sender: req.user._id,
       receiver: receiverId,
-      status: 'pending'
+      status: "pending",
     });
 
     if (existingRequest) {
-      return res.status(400).json({ message: 'You already have a pending request with this user' });
+      return res
+        .status(400)
+        .json({ message: "You already have a pending request with this user" });
     }
 
     // Create barter request
@@ -35,25 +40,32 @@ export const createBarterRequest = async (req, res) => {
       receiver: receiverId,
       skillOffered,
       skillRequested,
-      message
+      message,
     });
 
     const populatedRequest = await BarterRequest.findById(barterRequest._id)
-      .populate('sender', 'name email avatar skillsOffered')
-      .populate('receiver', 'name email avatar skillsWanted');
+      .populate("sender", "name email avatar skillsOffered")
+      .populate("receiver", "name email avatar skillsWanted");
 
     // Send email notification
-    await sendBarterRequestEmail(
+    const emailResult = await sendBarterRequestEmail(
       receiver.email,
       req.user.name,
       skillOffered,
       skillRequested
     );
 
+    if (emailResult && !emailResult.success) {
+      console.warn(
+        "⚠️ Barter request created but email notification failed:",
+        emailResult.error
+      );
+    }
+
     res.status(201).json(populatedRequest);
   } catch (error) {
-    console.error('Create barter request error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Create barter request error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -66,16 +78,13 @@ export const getBarterRequests = async (req, res) => {
 
     let query = {};
 
-    if (type === 'sent') {
+    if (type === "sent") {
       query.sender = req.user._id;
-    } else if (type === 'received') {
+    } else if (type === "received") {
       query.receiver = req.user._id;
     } else {
       // Get all requests where user is sender or receiver
-      query.$or = [
-        { sender: req.user._id },
-        { receiver: req.user._id }
-      ];
+      query.$or = [{ sender: req.user._id }, { receiver: req.user._id }];
     }
 
     if (status) {
@@ -83,37 +92,39 @@ export const getBarterRequests = async (req, res) => {
     }
 
     const requests = await BarterRequest.find(query)
-      .populate('sender', 'name email avatar skillsOffered')
-      .populate('receiver', 'name email avatar skillsWanted')
+      .populate("sender", "name email avatar skillsOffered")
+      .populate("receiver", "name email avatar skillsWanted")
       .sort({ createdAt: -1 })
       .lean();
 
     // Add unread message count and session info to each request
-    const requestsWithExtras = await Promise.all(requests.map(async (request) => {
-      let extras = { unreadCount: 0, session: null };
+    const requestsWithExtras = await Promise.all(
+      requests.map(async (request) => {
+        let extras = { unreadCount: 0, session: null };
 
-      if (request.status === 'accepted' || request.status === 'completed') {
-        const chat = await Chat.findOne({ barterRequest: request._id });
-        if (chat) {
-          extras.unreadCount = await Message.countDocuments({
-            chat: chat._id,
-            sender: { $ne: req.user._id },
-            isRead: false
-          });
-        }
+        if (request.status === "accepted" || request.status === "completed") {
+          const chat = await Chat.findOne({ barterRequest: request._id });
+          if (chat) {
+            extras.unreadCount = await Message.countDocuments({
+              chat: chat._id,
+              sender: { $ne: req.user._id },
+              isRead: false,
+            });
+          }
 
-        const session = await Session.findOne({ barterRequest: request._id });
-        if (session) {
-          extras.session = session;
+          const session = await Session.findOne({ barterRequest: request._id });
+          if (session) {
+            extras.session = session;
+          }
         }
-      }
-      return { ...request, ...extras };
-    }));
+        return { ...request, ...extras };
+      })
+    );
 
     res.json(requestsWithExtras);
   } catch (error) {
-    console.error('Get barter requests error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Get barter requests error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -123,23 +134,27 @@ export const getBarterRequests = async (req, res) => {
 export const getBarterRequestById = async (req, res) => {
   try {
     const request = await BarterRequest.findById(req.params.id)
-      .populate('sender', 'name email avatar skillsOffered')
-      .populate('receiver', 'name email avatar skillsWanted');
+      .populate("sender", "name email avatar skillsOffered")
+      .populate("receiver", "name email avatar skillsWanted");
 
     if (!request) {
-      return res.status(404).json({ message: 'Barter request not found' });
+      return res.status(404).json({ message: "Barter request not found" });
     }
 
     // Check if user is part of this request
-    if (request.sender._id.toString() !== req.user._id.toString() &&
-        request.receiver._id.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to view this request' });
+    if (
+      request.sender._id.toString() !== req.user._id.toString() &&
+      request.receiver._id.toString() !== req.user._id.toString()
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to view this request" });
     }
 
     res.json(request);
   } catch (error) {
-    console.error('Get barter request error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Get barter request error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -151,45 +166,47 @@ export const acceptBarterRequest = async (req, res) => {
     const request = await BarterRequest.findById(req.params.id);
 
     if (!request) {
-      return res.status(404).json({ message: 'Barter request not found' });
+      return res.status(404).json({ message: "Barter request not found" });
     }
 
     // Only receiver can accept
     if (request.receiver.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Only the receiver can accept this request' });
+      return res
+        .status(403)
+        .json({ message: "Only the receiver can accept this request" });
     }
 
-    if (request.status !== 'pending') {
-      return res.status(400).json({ message: 'Request is not pending' });
+    if (request.status !== "pending") {
+      return res.status(400).json({ message: "Request is not pending" });
     }
 
-    request.status = 'accepted';
+    request.status = "accepted";
     await request.save();
 
     // Create chat for this barter
     const chat = await Chat.create({
       participants: [request.sender, request.receiver],
-      barterRequest: request._id
+      barterRequest: request._id,
     });
 
     const populatedRequest = await BarterRequest.findById(request._id)
-      .populate('sender', 'name email avatar skillsOffered')
-      .populate('receiver', 'name email avatar skillsWanted');
+      .populate("sender", "name email avatar skillsOffered")
+      .populate("receiver", "name email avatar skillsWanted");
 
     // Send email to sender
     const sender = await User.findById(request.sender);
     await sendStatusUpdateEmail(
       sender.email,
       sender.name,
-      'accepted',
+      "accepted",
       populatedRequest.skillOffered,
       populatedRequest.skillRequested
     );
 
     res.json({ request: populatedRequest, chat });
   } catch (error) {
-    console.error('Accept barter request error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Accept barter request error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -201,39 +218,41 @@ export const rejectBarterRequest = async (req, res) => {
     const request = await BarterRequest.findById(req.params.id);
 
     if (!request) {
-      return res.status(404).json({ message: 'Barter request not found' });
+      return res.status(404).json({ message: "Barter request not found" });
     }
 
     // Only receiver can reject
     if (request.receiver.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Only the receiver can reject this request' });
+      return res
+        .status(403)
+        .json({ message: "Only the receiver can reject this request" });
     }
 
-    if (request.status !== 'pending') {
-      return res.status(400).json({ message: 'Request is not pending' });
+    if (request.status !== "pending") {
+      return res.status(400).json({ message: "Request is not pending" });
     }
 
-    request.status = 'rejected';
+    request.status = "rejected";
     await request.save();
 
     const populatedRequest = await BarterRequest.findById(request._id)
-      .populate('sender', 'name email avatar skillsOffered')
-      .populate('receiver', 'name email avatar skillsWanted');
+      .populate("sender", "name email avatar skillsOffered")
+      .populate("receiver", "name email avatar skillsWanted");
 
     // Send email to sender
     const sender = await User.findById(request.sender);
     await sendStatusUpdateEmail(
       sender.email,
       sender.name,
-      'rejected',
+      "rejected",
       populatedRequest.skillOffered,
       populatedRequest.skillRequested
     );
 
     res.json(populatedRequest);
   } catch (error) {
-    console.error('Reject barter request error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Reject barter request error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -245,7 +264,7 @@ export const completeBarterRequest = async (req, res) => {
     const request = await BarterRequest.findById(req.params.id);
 
     if (!request) {
-      return res.status(404).json({ message: 'Barter request not found' });
+      return res.status(404).json({ message: "Barter request not found" });
     }
 
     const userId = req.user._id.toString();
@@ -254,11 +273,13 @@ export const completeBarterRequest = async (req, res) => {
 
     // Check authorization
     if (!isSender && !isReceiver) {
-      return res.status(403).json({ message: 'Not authorized' });
+      return res.status(403).json({ message: "Not authorized" });
     }
 
-    if (request.status !== 'accepted') {
-      return res.status(400).json({ message: 'Request must be accepted first' });
+    if (request.status !== "accepted") {
+      return res
+        .status(400)
+        .json({ message: "Request must be accepted first" });
     }
 
     // Update individual completion status
@@ -270,18 +291,18 @@ export const completeBarterRequest = async (req, res) => {
 
     // Check if both have completed
     if (request.senderCompleted && request.receiverCompleted) {
-      request.status = 'completed';
+      request.status = "completed";
     }
 
     await request.save();
 
     const populatedRequest = await BarterRequest.findById(request._id)
-      .populate('sender', 'name email avatar skillsOffered')
-      .populate('receiver', 'name email avatar skillsWanted');
+      .populate("sender", "name email avatar skillsOffered")
+      .populate("receiver", "name email avatar skillsWanted");
 
     res.json(populatedRequest);
   } catch (error) {
-    console.error('Complete barter request error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Complete barter request error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
