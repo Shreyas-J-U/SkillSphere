@@ -1,21 +1,21 @@
-import express from 'express';
-import { 
-  createSession, 
-  getSessionByBarterId, 
-  markUserReady, 
+import express from "express";
+import {
+  createSession,
+  getSessionByBarterId,
+  markUserReady,
   completeSession,
   startMeetingInstance,
-  endMeetingInstance
-} from '../controllers/sessionController.js';
-import { protect } from '../middleware/authMiddleware.js';
+  endMeetingInstance,
+} from "../controllers/sessionController.js";
+import { requireAuth, attachUser } from "../middleware/clerkAuth.js";
 
 const router = express.Router();
 
-router.post('/', protect, createSession);
-router.get('/barter/:barterId', protect, getSessionByBarterId);
-router.put('/:id/ready', protect, markUserReady);
-router.put('/:id/start', protect, startMeetingInstance);
-router.put('/:id/end', protect, endMeetingInstance);
-router.put('/:id/complete', protect, completeSession);
+router.post("/", requireAuth, attachUser, createSession);
+router.get("/barter/:barterId", requireAuth, attachUser, getSessionByBarterId);
+router.put("/:id/ready", requireAuth, attachUser, markUserReady);
+router.put("/:id/start", requireAuth, attachUser, startMeetingInstance);
+router.put("/:id/end", requireAuth, attachUser, endMeetingInstance);
+router.put("/:id/complete", requireAuth, attachUser, completeSession);
 
 export default router;
