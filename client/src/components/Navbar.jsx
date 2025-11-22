@@ -8,6 +8,7 @@ import {
   Zap,
   Activity,
   Briefcase,
+  Users,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -64,6 +65,14 @@ const Navbar = ({ onHistoryClick }) => {
             >
               <Briefcase size={20} />
               <span className="hidden md:inline font-medium">Jobs</span>
+            </Link>
+
+            <Link
+              to="/community"
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all"
+            >
+              <Users size={20} />
+              <span className="hidden md:inline font-medium">Community</span>
             </Link>
 
             <Link

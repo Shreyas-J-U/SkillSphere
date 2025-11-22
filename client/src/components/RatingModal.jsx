@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { X, Star } from "lucide-react";
-import toast from "react-hot-toast"; // 👉 Added
+import toast from "react-hot-toast";
 import api from "../utils/api";
 
 const RatingModal = ({
@@ -33,8 +33,20 @@ const RatingModal = ({
     e.preventDefault();
 
     if (rating === 0) {
-      setError("Please select a rating");
-      toast.error("Please select a rating before submitting.");
+      setError("Please select an overall rating");
+      toast.error("Please select an overall rating.");
+      return;
+    }
+
+    // 🔹 Ensure all categories are rated
+    const unratedCategories = Object.entries(categories)
+      .filter(([_, value]) => value === 0)
+      .map(([key]) => categoryLabels[key]);
+
+    if (unratedCategories.length > 0) {
+      const message = `Please rate: ${unratedCategories.join(", ")}`;
+      setError(message);
+      toast.error(message);
       return;
     }
 
@@ -67,31 +79,29 @@ const RatingModal = ({
     }
   };
 
-  const renderStars = (value, onChange, size = 24) => {
-    return (
-      <div className="flex space-x-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            type="button"
-            onClick={() => onChange(star)}
-            onMouseEnter={() => setHoverRating(star)}
-            onMouseLeave={() => setHoverRating(0)}
-            className="focus:outline-none transition-transform hover:scale-110"
-          >
-            <Star
-              size={size}
-              className={`${
-                star <= (hoverRating || value)
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "text-gray-300"
-              } transition-colors`}
-            />
-          </button>
-        ))}
-      </div>
-    );
-  };
+  const renderStars = (value, onChange, size = 24) => (
+    <div className="flex space-x-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => onChange(star)}
+          onMouseEnter={() => setHoverRating(star)}
+          onMouseLeave={() => setHoverRating(0)}
+          className="focus:outline-none transition-transform hover:scale-110"
+        >
+          <Star
+            size={size}
+            className={`${
+              star <= (hoverRating || value)
+                ? "fill-yellow-400 text-yellow-400"
+                : "text-gray-300"
+            } transition-colors`}
+          />
+        </button>
+      ))}
+    </div>
+  );
 
   if (!isOpen) return null;
 
@@ -162,7 +172,7 @@ const RatingModal = ({
           {/* Category Ratings */}
           <div className="space-y-4">
             <label className="block text-sm font-semibold text-gray-700">
-              Detailed Ratings (Optional)
+              Detailed Ratings (Required)
             </label>
             {Object.keys(categories).map((category) => (
               <div
@@ -174,7 +184,8 @@ const RatingModal = ({
                 </span>
                 {renderStars(
                   categories[category],
-                  (value) => setCategories({ ...categories, [category]: value }),
+                  (value) =>
+                    setCategories({ ...categories, [category]: value }),
                   20
                 )}
               </div>
