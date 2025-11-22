@@ -1,13 +1,13 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
-import { useAuth } from './AuthContext';
+import { createContext, useContext, useEffect, useState } from "react";
+import { io } from "socket.io-client";
+import { useAuth } from "./AuthContext";
 
 const SocketContext = createContext();
 
 export const useSocket = () => {
   const context = useContext(SocketContext);
   if (!context) {
-    throw new Error('useSocket must be used within SocketProvider');
+    throw new Error("useSocket must be used within SocketProvider");
   }
   return context;
 };
@@ -15,46 +15,65 @@ export const useSocket = () => {
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
-  const { token, isAuthenticated } = useAuth();
+  const { getToken, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated && token) {
-      const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
-        auth: { token }
-      });
+    const initSocket = async () => {
+      if (isAuthenticated) {
+        try {
+          const token = await getToken();
 
-      newSocket.on('connect', () => {
-        console.log('✅ Socket connected');
-        setConnected(true);
-      });
+          if (!token) return;
 
-      newSocket.on('disconnect', () => {
-        console.log('❌ Socket disconnected');
-        setConnected(false);
-      });
+          const newSocket = io(
+            import.meta.env.VITE_API_URL || "http://localhost:5000",
+            {
+              auth: { token },
+            }
+          );
 
-      newSocket.on('connect_error', (error) => {
-        console.error('Socket connection error:', error);
-      });
+          newSocket.on("connect", () => {
+            console.log("✅ Socket connected");
+            setConnected(true);
+          });
 
-      setSocket(newSocket);
+          newSocket.on("disconnect", () => {
+            console.log("❌ Socket disconnected");
+            setConnected(false);
+          });
 
-      return () => {
-        newSocket.close();
-      };
-    } else {
+          newSocket.on("connect_error", (error) => {
+            console.error("Socket connection error:", error);
+          });
+
+          setSocket(newSocket);
+        } catch (error) {
+          console.error("Error getting token for socket:", error);
+        }
+      } else {
+        if (socket) {
+          socket.close();
+          setSocket(null);
+          setConnected(false);
+        }
+      }
+    };
+
+    initSocket();
+
+    return () => {
       if (socket) {
         socket.close();
-        setSocket(null);
-        setConnected(false);
       }
-    }
-  }, [isAuthenticated, token]);
+    };
+  }, [isAuthenticated, getToken]);
 
   const value = {
     socket,
-    connected
+    connected,
   };
 
-  return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
+  return (
+    <SocketContext.Provider value={value}>{children}</SocketContext.Provider>
+  );
 };
