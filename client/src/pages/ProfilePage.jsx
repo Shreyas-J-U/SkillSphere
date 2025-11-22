@@ -1,27 +1,27 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Edit2, Save, X, Plus, Upload, User as UserIcon } from 'lucide-react';
-import Navbar from '../components/Navbar';
-import SkillTag from '../components/SkillTag';
-import BarterHistoryModal from '../components/BarterHistoryModal';
-import { useAuth } from '../context/AuthContext';
-import { updateProfile, updateSkills } from '../api/userApi';
-import { uploadFile } from '../api/uploadApi';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Edit2, Save, X, Plus, Upload, User as UserIcon } from "lucide-react";
+import Navbar from "../components/Navbar";
+import SkillTag from "../components/SkillTag";
+import BarterHistoryModal from "../components/BarterHistoryModal";
+import { useAuth } from "../context/AuthContext";
+import { updateProfile, updateSkills } from "../api/userApi";
+import { uploadFile } from "../api/uploadApi";
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    bio: user?.bio || '',
-    avatar: user?.avatar || ''
+    name: user?.name || "",
+    bio: user?.bio || "",
+    avatar: user?.avatar || "",
   });
   const [skills, setSkills] = useState({
     offered: user?.skillsOffered || [],
-    wanted: user?.skillsWanted || []
+    wanted: user?.skillsWanted || [],
   });
-  const [newSkill, setNewSkill] = useState('');
-  const [skillType, setSkillType] = useState('offered');
+  const [newSkill, setNewSkill] = useState("");
+  const [skillType, setSkillType] = useState("offered");
   const [showHistory, setShowHistory] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -31,8 +31,8 @@ const ProfilePage = () => {
       updateUser(updatedUser);
       setEditing(false);
     } catch (error) {
-      console.error('Error updating profile:', error);
-      alert('Failed to update profile');
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile");
     }
   };
 
@@ -41,17 +41,17 @@ const ProfilePage = () => {
 
     const updatedSkills = {
       ...skills,
-      [skillType]: [...skills[skillType], newSkill.trim()]
+      [skillType]: [...skills[skillType], newSkill.trim()],
     };
 
     setSkills(updatedSkills);
-    setNewSkill('');
+    setNewSkill("");
   };
 
   const handleRemoveSkill = (skill, type) => {
     const updatedSkills = {
       ...skills,
-      [type]: skills[type].filter(s => s !== skill)
+      [type]: skills[type].filter((s) => s !== skill),
     };
     setSkills(updatedSkills);
   };
@@ -60,13 +60,13 @@ const ProfilePage = () => {
     try {
       const updatedUser = await updateSkills({
         skillsOffered: skills.offered,
-        skillsWanted: skills.wanted
+        skillsWanted: skills.wanted,
       });
       updateUser(updatedUser);
-      alert('Skills updated successfully!');
+      alert("Skills updated successfully!");
     } catch (error) {
-      console.error('Error updating skills:', error);
-      alert('Failed to update skills');
+      console.error("Error updating skills:", error);
+      alert("Failed to update skills");
     }
   };
 
@@ -79,8 +79,8 @@ const ProfilePage = () => {
       const { url } = await uploadFile(file);
       setFormData({ ...formData, avatar: url });
     } catch (error) {
-      console.error('Error uploading avatar:', error);
-      alert('Failed to upload avatar');
+      console.error("Error uploading avatar:", error);
+      alert("Failed to upload avatar");
     } finally {
       setUploading(false);
     }
@@ -93,7 +93,10 @@ const ProfilePage = () => {
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        ></div>
       </div>
 
       <div className="container mx-auto px-6 py-8 max-w-4xl relative z-10">
@@ -148,12 +151,16 @@ const ProfilePage = () => {
             {/* Avatar */}
             <div className="relative">
               <img
-                src={formData.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+                src={
+                  formData.avatar ||
+                  "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                }
                 alt={formData.name}
                 className="w-32 h-32 rounded-full border-4 border-blue-500 shadow-lg"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                  e.target.src =
+                    "https://cdn-icons-png.flaticon.com/512/149/149071.png";
                 }}
               />
               {editing && (
@@ -179,19 +186,27 @@ const ProfilePage = () => {
               {editing ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Name</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Name
+                    </label>
                     <input
                       type="text"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                       className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-gray-900"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Bio</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Bio
+                    </label>
                     <textarea
                       value={formData.bio}
-                      onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, bio: e.target.value })
+                      }
                       className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-gray-900 min-h-[100px] resize-none"
                       placeholder="Tell us about yourself..."
                     />
@@ -199,10 +214,14 @@ const ProfilePage = () => {
                 </div>
               ) : (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">{formData.name}</h2>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                    {formData.name}
+                  </h2>
                   <p className="text-gray-600 mb-4">{user?.email}</p>
                   {formData.bio && (
-                    <p className="text-gray-700 leading-relaxed">{formData.bio}</p>
+                    <p className="text-gray-700 leading-relaxed">
+                      {formData.bio}
+                    </p>
                   )}
                 </div>
               )}
@@ -230,16 +249,16 @@ const ProfilePage = () => {
                 <option value="offered">Skills I Offer</option>
                 <option value="wanted">Skills I Want</option>
               </select>
-              
+
               <input
                 type="text"
                 value={newSkill}
                 onChange={(e) => setNewSkill(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
+                onKeyPress={(e) => e.key === "Enter" && handleAddSkill()}
                 className="flex-1 px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-gray-900"
                 placeholder="e.g., Python, Guitar, Cooking..."
               />
-              
+
               <motion.button
                 onClick={handleAddSkill}
                 whileHover={{ scale: 1.05 }}
@@ -254,7 +273,9 @@ const ProfilePage = () => {
           {/* Skills Offered */}
           {skills.offered.length > 0 && (
             <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-3">Skills I Offer</h4>
+              <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                Skills I Offer
+              </h4>
               <div className="flex flex-wrap gap-2">
                 {skills.offered.map((skill, index) => (
                   <SkillTag
@@ -262,7 +283,7 @@ const ProfilePage = () => {
                     skill={skill}
                     type="offered"
                     removable
-                    onRemove={() => handleRemoveSkill(skill, 'offered')}
+                    onRemove={() => handleRemoveSkill(skill, "offered")}
                   />
                 ))}
               </div>
@@ -272,7 +293,9 @@ const ProfilePage = () => {
           {/* Skills Wanted */}
           {skills.wanted.length > 0 && (
             <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-3">Skills I Want to Learn</h4>
+              <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                Skills I Want to Learn
+              </h4>
               <div className="flex flex-wrap gap-2">
                 {skills.wanted.map((skill, index) => (
                   <SkillTag
@@ -280,7 +303,7 @@ const ProfilePage = () => {
                     skill={skill}
                     type="wanted"
                     removable
-                    onRemove={() => handleRemoveSkill(skill, 'wanted')}
+                    onRemove={() => handleRemoveSkill(skill, "wanted")}
                   />
                 ))}
               </div>
@@ -300,7 +323,10 @@ const ProfilePage = () => {
       </div>
 
       {/* History Modal */}
-      <BarterHistoryModal isOpen={showHistory} onClose={() => setShowHistory(false)} />
+      <BarterHistoryModal
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+      />
     </div>
   );
 };
