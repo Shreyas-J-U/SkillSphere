@@ -33,6 +33,7 @@ import sessionRoutes from "./routes/sessionRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import ratingRoutes from "./routes/ratingRoutes.js";
+import communityRoutes from "./routes/communityRoutes.js";
 
 // Debug: Verify Clerk keys are loaded
 console.log("🔍 Environment check:");
@@ -78,6 +79,7 @@ app.use("/api/sessions", sessionRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/ratings", ratingRoutes);
+app.use("/api/community", communityRoutes);
 
 // Health check route
 app.get("/api/health", (req, res) => {
