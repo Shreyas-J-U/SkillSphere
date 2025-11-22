@@ -16,12 +16,18 @@ import ProfilePage from "./pages/ProfilePage";
 import ActivityPage from "./pages/ActivityPage";
 import ChatPage from "./pages/ChatPage";
 import JobsPage from "./pages/JobsPage";
+import CommunityPage from "./pages/CommunityPage";
 
 function App() {
   return (
     <AuthProvider>
       <SocketProvider>
-        <Router>
+        <Router
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
           <Toaster
             position="top-right"
             toastOptions={{
@@ -89,6 +95,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ChatPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/community"
+              element={
+                <ProtectedRoute>
+                  <CommunityPage />
                 </ProtectedRoute>
               }
             />

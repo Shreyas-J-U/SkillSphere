@@ -195,8 +195,10 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
             <>
               <motion.button
                 onClick={() => {
-                  onAccept(request._id);
-                  toast.success("Request accepted!");
+                  if (onAccept) {
+                    onAccept(request._id);
+                    toast.success("Request accepted!");
+                  }
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -206,8 +208,10 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
               </motion.button>
               <motion.button
                 onClick={() => {
-                  onReject(request._id);
-                  toast.error("Request rejected.");
+                  if (onReject) {
+                    onReject(request._id);
+                    toast.error("Request rejected.");
+                  }
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
