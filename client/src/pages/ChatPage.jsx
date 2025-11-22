@@ -1,14 +1,36 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Send, Image as ImageIcon, Video, ArrowLeft, CheckCircle, Play, Square, Clock, History } from 'lucide-react';
-import Navbar from '../components/Navbar';
-import { getOrCreateChat, getChatMessages, sendMessage as apiSendMessage } from '../api/chatApi';
-import { getBarterRequestById, completeBarterRequest } from '../api/barterApi';
-import { createSession, getSessionByBarterId, markUserReady, startMeetingInstance, endMeetingInstance } from '../api/sessionApi';
-import { uploadFile } from '../api/uploadApi';
-import { useAuth } from '../context/AuthContext';
-import { useSocket } from '../context/SocketContext';
+import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  Send,
+  Image as ImageIcon,
+  Video,
+  ArrowLeft,
+  Play,
+  Square,
+  Clock,
+  History,
+} from "lucide-react";
+import Navbar from "../components/Navbar";
+import {
+  getOrCreateChat,
+  getChatMessages,
+  sendMessage as apiSendMessage,
+} from "../api/chatApi";
+import { getBarterRequestById, completeBarterRequest } from "../api/barterApi";
+import {
+  createSession,
+  getSessionByBarterId,
+  markUserReady,
+  startMeetingInstance,
+  endMeetingInstance,
+} from "../api/sessionApi";
+import { uploadFile } from "../api/uploadApi";
+import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
+
+// 🔥 Add toast
+import toast from "react-hot-toast";
 
 const ChatPage = () => {
   const { barterId } = useParams();
@@ -17,11 +39,11 @@ const ChatPage = () => {
   const { socket } = useSocket();
   const [chat, setChat] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [barterRequest, setBarterRequest] = useState(null);
   const [session, setSession] = useState(null);
   const [showSessionModal, setShowSessionModal] = useState(false);
-  const [meetLink, setMeetLink] = useState('');
+  const [meetLink, setMeetLink] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -33,15 +55,15 @@ const ChatPage = () => {
 
   useEffect(() => {
     if (socket && chat) {
-      socket.emit('join_chat', chat._id);
+      socket.emit("join_chat", chat._id);
 
-      socket.on('new_message', handleNewMessage);
-      socket.on('participant_ready', handleParticipantReady);
+      socket.on("new_message", handleNewMessage);
+      socket.on("participant_ready", handleParticipantReady);
 
       return () => {
-        socket.emit('leave_chat', chat._id);
-        socket.off('new_message');
-        socket.off('participant_ready');
+        socket.emit("leave_chat", chat._id);
+        socket.off("new_message");
+        socket.off("participant_ready");
       };
     }
   }, [socket, chat]);
@@ -55,7 +77,7 @@ const ChatPage = () => {
       setLoading(true);
       const [barterData, chatData] = await Promise.all([
         getBarterRequestById(barterId),
-        getOrCreateChat(barterId)
+        getOrCreateChat(barterId),
       ]);
 
       setBarterRequest(barterData);
@@ -64,54 +86,59 @@ const ChatPage = () => {
       const messagesData = await getChatMessages(chatData._id);
       setMessages(messagesData);
 
-      // Try to fetch session
       try {
         const sessionData = await getSessionByBarterId(barterId);
-        setSession(sessionData);
+        if (sessionData?._id) {
+          setSession(sessionData);
+        } else {
+          setSession(null);
+        }
       } catch (err) {
-        // Session doesn't exist yet
+        // No session yet
       }
-    } catch (error) {
-      console.error('Error fetching chat data:', error);
+    } catch {
+      toast.error("Failed to load chat data");
     } finally {
       setLoading(false);
     }
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleNewMessage = (message) => {
-    setMessages(prev => [...prev, message]);
+    setMessages((prev) => [...prev, message]);
   };
 
-  const handleParticipantReady = ({ sessionId }) => {
+  const handleParticipantReady = () => {
     fetchData();
   };
 
-  const sendMessage = async (content, messageType = 'text', mediaUrl = null) => {
+  const sendMessage = async (
+    content,
+    messageType = "text",
+    mediaUrl = null
+  ) => {
     if ((!content.trim() && !mediaUrl) || uploading) return;
 
     const messageData = {
       chatId: chat._id,
       content,
       messageType,
-      mediaUrl
+      mediaUrl,
     };
 
     try {
-      if (socket && socket.connected) {
-        socket.emit('send_message', messageData);
+      if (socket?.connected) {
+        socket.emit("send_message", messageData);
       } else {
-        // Fallback to API if socket is not connected
         const savedMessage = await apiSendMessage(chat._id, messageData);
-        setMessages(prev => [...prev, savedMessage]);
+        setMessages((prev) => [...prev, savedMessage]);
       }
-      setNewMessage('');
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      alert('Failed to send message. Please check your connection.');
+      setNewMessage("");
+    } catch {
+      toast.error("Failed to send message");
     }
   };
 
@@ -122,11 +149,11 @@ const ChatPage = () => {
     try {
       setUploading(true);
       const { url } = await uploadFile(file);
-      const messageType = file.type.startsWith('image/') ? 'image' : 'file';
+      const messageType = file.type.startsWith("image/") ? "image" : "file";
       await sendMessage(file.name, messageType, url);
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      alert('Failed to upload file');
+      toast.success("File uploaded successfully");
+    } catch {
+      toast.error("File upload failed");
     } finally {
       setUploading(false);
     }
@@ -136,14 +163,14 @@ const ChatPage = () => {
     try {
       const sessionData = await createSession({
         barterRequestId: barterId,
-        meetLink
+        meetLink,
       });
       setSession(sessionData);
       setShowSessionModal(false);
-      setMeetLink('');
-    } catch (error) {
-      console.error('Error creating session:', error);
-      alert(error.response?.data?.message || 'Failed to create session');
+      setMeetLink("");
+      toast.success("Session created successfully");
+    } catch {
+      toast.error("Failed to create session");
     }
   };
 
@@ -152,15 +179,15 @@ const ChatPage = () => {
       const updatedSession = await markUserReady(session._id);
       setSession(updatedSession);
 
-      if (socket) {
-        socket.emit('session_ready', {
-          sessionId: session._id,
-          barterRequestId: barterId,
-          participants: session.participants.map(p => p.user._id)
-        });
-      }
-    } catch (error) {
-      console.error('Error marking ready:', error);
+      socket?.emit("session_ready", {
+        sessionId: session._id,
+        barterRequestId: barterId,
+        participants: session.participants.map((p) => p.user._id),
+      });
+
+      toast.success("You're marked as ready");
+    } catch {
+      toast.error("Failed to mark as ready");
     }
   };
 
@@ -168,48 +195,60 @@ const ChatPage = () => {
     try {
       const updatedSession = await startMeetingInstance(session._id);
       setSession(updatedSession);
-      // Open Google Meet in new tab
-      window.open(session.meetLink, '_blank');
-    } catch (error) {
-      console.error('Error starting meeting:', error);
-      alert(error.response?.data?.message || 'Failed to start meeting');
+      window.open(session.meetLink, "_blank");
+      toast.success("Meeting started");
+    } catch {
+      toast.error("Failed to start meeting");
     }
   };
 
   const handleEndMeeting = async () => {
-    if (confirm('End the current meeting? Time will be recorded.')) {
+    if (confirm("End the current meeting? Time will be recorded.")) {
       try {
         const updatedSession = await endMeetingInstance(session._id);
         setSession(updatedSession);
-        alert(`Meeting ended! Duration: ${updatedSession.meetingInstances[updatedSession.meetingInstances.length - 1].duration} minutes`);
-      } catch (error) {
-        console.error('Error ending meeting:', error);
-        alert(error.response?.data?.message || 'Failed to end meeting');
+
+        toast.success(
+          `Meeting ended (Duration: ${
+            updatedSession.meetingInstances.at(-1).duration
+          } min)`
+        );
+      } catch {
+        toast.error("Failed to end meeting");
       }
     }
   };
 
   const handleCompleteRequest = async () => {
-    if (confirm('Mark this barter as completed?')) {
+    if (confirm("Mark this barter as completed?")) {
       try {
         await completeBarterRequest(barterId);
-        alert('Barter marked as completed!');
-        navigate('/dashboard');
-      } catch (error) {
-        console.error('Error completing barter:', error);
+        toast.success("Barter marked as completed!");
+        navigate("/dashboard");
+      } catch {
+        toast.error("Failed to complete barter");
       }
     }
   };
 
-  const otherUser = barterRequest?.sender?._id === user?._id 
-    ? barterRequest?.receiver 
-    : barterRequest?.sender;
+  const otherUser =
+    barterRequest?.sender?._id === user?._id
+      ? barterRequest?.receiver
+      : barterRequest?.sender;
 
-  const isUserReady = session?.participants?.find(p => p.user._id === user?._id)?.isReady;
-  const isOtherReady = session?.participants?.find(p => p.user._id !== user?._id)?.isReady;
+  const isUserReady = session?.participants?.find(
+    (p) => p.user._id === user?._id
+  )?.isReady;
+  const isOtherReady = session?.participants?.find(
+    (p) => p.user._id !== user?._id
+  )?.isReady;
   const bothReady = isUserReady && isOtherReady;
-  const hasInProgressMeeting = session?.meetingInstances?.some(inst => inst.status === 'in-progress');
-  const currentInstance = session?.meetingInstances?.find(inst => inst.status === 'in-progress');
+  const hasInProgressMeeting = session?.meetingInstances?.some(
+    (inst) => inst.status === "in-progress"
+  );
+  const currentInstance = session?.meetingInstances?.find(
+    (inst) => inst.status === "in-progress"
+  );
 
   if (loading) {
     return (
@@ -226,7 +265,10 @@ const ChatPage = () => {
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        ></div>
       </div>
 
       <div className="flex-1 container mx-auto px-6 py-6 flex flex-col max-w-5xl relative z-10">
@@ -234,22 +276,28 @@ const ChatPage = () => {
         <div className="bg-white rounded-t-2xl p-4 flex items-center justify-between shadow-lg border border-gray-100">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate("/dashboard")}
               className="p-2 hover:bg-gray-100 rounded-lg transition-all text-gray-600"
             >
               <ArrowLeft size={24} />
             </button>
             <img
-              src={otherUser?.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+              src={
+                otherUser?.avatar ||
+                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              }
               alt={otherUser?.name}
               className="w-12 h-12 rounded-full border-2 border-blue-500"
               onError={(e) => {
                 e.target.onerror = null;
-                e.target.src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                e.target.src =
+                  "https://cdn-icons-png.flaticon.com/512/149/149071.png";
               }}
             />
             <div>
-              <h2 className="font-bold text-lg text-gray-900">{otherUser?.name}</h2>
+              <h2 className="font-bold text-lg text-gray-900">
+                {otherUser?.name}
+              </h2>
               <p className="text-sm text-gray-500">
                 {barterRequest?.skillOffered} ↔️ {barterRequest?.skillRequested}
               </p>
@@ -278,34 +326,58 @@ const ChatPage = () => {
                 <div>
                   <p className="text-sm text-gray-600 mb-2">Learning Session</p>
                   <div className="flex items-center space-x-4">
-                    <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${isUserReady ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                      You: {isUserReady ? 'Ready' : 'Not Ready'}
+                    <span
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold ${
+                        isUserReady
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      You: {isUserReady ? "Ready" : "Not Ready"}
                     </span>
-                    <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${isOtherReady ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                      {otherUser?.name}: {isOtherReady ? 'Ready' : 'Not Ready'}
+                    <span
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold ${
+                        isOtherReady
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {otherUser?.name}: {isOtherReady ? "Ready" : "Not Ready"}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex space-x-2">
                   {!isUserReady && !hasInProgressMeeting && (
-                    <button onClick={handleMarkReady} className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all">
+                    <button
+                      onClick={handleMarkReady}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all"
+                    >
                       Mark as Ready
                     </button>
                   )}
                   {bothReady && !hasInProgressMeeting && (
-                    <button onClick={handleStartMeeting} className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all flex items-center gap-2">
+                    <button
+                      onClick={handleStartMeeting}
+                      className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all flex items-center gap-2"
+                    >
                       <Play size={18} />
                       Start Meeting
                     </button>
                   )}
                   {hasInProgressMeeting && (
-                    <button onClick={handleEndMeeting} className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all flex items-center gap-2">
+                    <button
+                      onClick={handleEndMeeting}
+                      className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all flex items-center gap-2"
+                    >
                       <Square size={18} />
                       End Meeting
                     </button>
                   )}
-                  <button onClick={() => setShowHistory(!showHistory)} className="px-4 py-2 border-2 border-blue-200 text-blue-700 rounded-xl hover:bg-blue-100 transition-all flex items-center gap-2">
+                  <button
+                    onClick={() => setShowHistory(!showHistory)}
+                    className="px-4 py-2 border-2 border-blue-200 text-blue-700 rounded-xl hover:bg-blue-100 transition-all flex items-center gap-2"
+                  >
                     <History size={18} />
                     History
                   </button>
@@ -318,58 +390,86 @@ const ChatPage = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                      <span className="font-medium text-gray-900">Meeting #{session.currentInstance} in Progress</span>
+                      <span className="font-medium text-gray-900">
+                        Meeting #{session.currentInstance} in Progress
+                      </span>
                     </div>
                     <div className="flex items-center space-x-2 text-sm text-gray-500">
                       <Clock size={16} />
-                      <span>Started: {new Date(currentInstance.startedAt).toLocaleTimeString()}</span>
+                      <span>
+                        Started:{" "}
+                        {new Date(
+                          currentInstance.startedAt
+                        ).toLocaleTimeString()}
+                      </span>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Meeting History */}
-              {showHistory && session.meetingInstances && session.meetingInstances.length > 0 && (
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-gray-900">Meeting History</h3>
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                      <Clock size={16} />
-                      <span>Total: {session.totalDuration || 0} minutes</span>
+              {showHistory &&
+                session.meetingInstances &&
+                session.meetingInstances.length > 0 && (
+                  <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-gray-900">
+                        Meeting History
+                      </h3>
+                      <div className="flex items-center space-x-2 text-sm text-gray-600">
+                        <Clock size={16} />
+                        <span>Total: {session.totalDuration || 0} minutes</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-2 max-h-40 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
-                    {session.meetingInstances.map((instance, index) => (
-                      <div key={index} className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium text-gray-900">Meeting #{instance.instanceNumber}</p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(instance.startedAt).toLocaleString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            {instance.status === 'completed' ? (
-                              <>
-                                <p className="font-semibold text-green-600">{instance.duration} min</p>
-                                <p className="text-xs text-gray-500">Completed</p>
-                              </>
-                            ) : (
-                              <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">In Progress</span>
-                            )}
+                    <div
+                      className="space-y-2 max-h-40 overflow-y-auto"
+                      style={{ scrollbarWidth: "thin" }}
+                    >
+                      {session.meetingInstances.map((instance, index) => (
+                        <div
+                          key={index}
+                          className="bg-gray-50 p-3 rounded-lg border border-gray-100"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                Meeting #{instance.instanceNumber}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(instance.startedAt).toLocaleString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              {instance.status === "completed" ? (
+                                <>
+                                  <p className="font-semibold text-green-600">
+                                    {instance.duration} min
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Completed
+                                  </p>
+                                </>
+                              ) : (
+                                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">
+                                  In Progress
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
         )}
 
         {/* Messages */}
-        <div className="flex-1 bg-white border-x border-gray-100 p-4 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+        <div
+          className="flex-1 bg-white border-x border-gray-100 p-4 overflow-y-auto"
+          style={{ scrollbarWidth: "thin" }}
+        >
           {messages.map((message) => {
             const isOwn = message.sender._id === user?._id;
             return (
@@ -377,34 +477,38 @@ const ChatPage = () => {
                 key={message._id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex mb-4 ${isOwn ? 'justify-end' : 'justify-start'}`}
+                className={`flex mb-4 ${
+                  isOwn ? "justify-end" : "justify-start"
+                }`}
               >
-                <div className={`max-w-[70%] ${isOwn ? 'order-2' : 'order-1'}`}>
+                <div className={`max-w-[70%] ${isOwn ? "order-2" : "order-1"}`}>
                   <div
                     className={`p-3 rounded-2xl shadow-sm ${
                       isOwn
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                        : 'bg-gray-100 text-gray-800'
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                        : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    {message.messageType === 'image' && (
+                    {message.messageType === "image" && (
                       <img
                         src={message.mediaUrl}
                         alt="Shared image"
                         className="rounded-lg mb-2 max-w-full"
                       />
                     )}
-                    {message.messageType === 'file' && (
+                    {message.messageType === "file" && (
                       <a
                         href={message.mediaUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`underline ${isOwn ? 'text-blue-100' : 'text-blue-600'}`}
+                        className={`underline ${
+                          isOwn ? "text-blue-100" : "text-blue-600"
+                        }`}
                       >
                         📎 {message.content}
                       </a>
                     )}
-                    {message.messageType === 'text' && <p>{message.content}</p>}
+                    {message.messageType === "text" && <p>{message.content}</p>}
                   </div>
                   <p className="text-xs text-gray-400 mt-1 px-2">
                     {new Date(message.createdAt).toLocaleTimeString()}
@@ -434,7 +538,7 @@ const ChatPage = () => {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === "Enter") {
                 e.preventDefault();
                 sendMessage(newMessage);
               }
@@ -466,10 +570,14 @@ const ChatPage = () => {
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl"
           >
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">Create Learning Session</h2>
+            <h2 className="text-2xl font-bold mb-4 text-gray-900">
+              Create Learning Session
+            </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">Google Meet Link</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  Google Meet Link
+                </label>
                 <input
                   type="url"
                   value={meetLink}
