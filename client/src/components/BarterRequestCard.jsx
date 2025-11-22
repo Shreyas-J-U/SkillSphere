@@ -1,4 +1,4 @@
-// BarterRequestCard.jsx – cleaned up version
+// BarterRequestCard.jsx – updated for react-hot-toast
 import { motion } from "framer-motion";
 import { MessageSquare, CheckCircle, XCircle, Clock, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +6,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import RatingModal from "./RatingModal";
 import api from "../utils/api";
+
+// 🔥 Use react-hot-toast instead of toastify
+import toast from "react-hot-toast";
 
 const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
   const navigate = useNavigate();
@@ -17,9 +20,6 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
 
   const isCompleted = request.status === "completed";
 
-  // ---------------------------------------------------
-  // Check if the current user can rate the other party
-  // ---------------------------------------------------
   const checkCanRate = async () => {
     try {
       const response = await api.get(`/ratings/can-rate/${request._id}`);
@@ -27,8 +27,7 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
       if (response.data.otherParticipant) {
         setOtherParticipant(response.data.otherParticipant);
       }
-    } catch (error) {
-      console.error("Error checking rating eligibility:", error);
+    } catch {
       setCanRate(false);
     }
   };
@@ -37,38 +36,33 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
     if (isCompleted) checkCanRate();
   }, [request._id, isCompleted]);
 
-  // ---------------------------------------------------
-  // Mark barter as complete (calls the API via the shared `api` instance)
-  // ---------------------------------------------------
   const handleCompleteRequest = async () => {
     setCompleting(true);
     try {
       const response = await api.put(`/barters/${request._id}/complete`);
+
+      toast.success("Barter marked as completed!");
+
       if (onUpdate) {
         onUpdate(response.data);
-        // Re‑evaluate rating eligibility now that the barter is marked complete
         checkCanRate();
       }
-    } catch (error) {
-      console.error("Error completing request:", error);
-      alert("Failed to complete barter");
+    } catch {
+      toast.error("Failed to mark complete. Please try again.");
     } finally {
       setCompleting(false);
     }
   };
 
-  // ---------------------------------------------------
-  // Rating modal handling
-  // ---------------------------------------------------
   const handleRatingSubmitted = () => {
     setCanRate(false);
     setShowRatingModal(false);
+
+    toast.success("Thank you for rating!");
+
     if (onUpdate) onUpdate({ ...request });
   };
 
-  // ---------------------------------------------------
-  // UI helpers – status badge
-  // ---------------------------------------------------
   const getStatusBadge = (status) => {
     const badges = {
       pending: {
@@ -114,7 +108,7 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
         whileHover={{ y: -5, scale: 1.02 }}
         className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
       >
-        {/* Header – user info and status badge */}
+        {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
             <img
@@ -140,7 +134,7 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
           {getStatusBadge(request.status)}
         </div>
 
-        {/* Offer / request details */}
+        {/* Offer/Request */}
         <div className="space-y-3 mb-4">
           <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
             <p className="text-sm text-gray-600 mb-1">
@@ -166,7 +160,7 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
           )}
         </div>
 
-        {/* Session status */}
+        {/* Session */}
         {!isCompleted &&
           request.session &&
           (request.session.status === "scheduled" ||
@@ -182,7 +176,7 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
                 <>
                   <span className="relative flex h-3 w-3">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
+                    <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
                   </span>
                   Session Started - Join Now!
                 </>
@@ -195,13 +189,15 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
             </div>
           )}
 
-        {/* Action buttons */}
+        {/* Buttons */}
         <div className="flex gap-2">
-          {/* Pending – accept / reject */}
           {request.status === "pending" && !isSender && (
             <>
               <motion.button
-                onClick={() => onAccept(request._id)}
+                onClick={() => {
+                  onAccept(request._id);
+                  toast.success("Request accepted!");
+                }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all flex items-center justify-center gap-2"
@@ -209,7 +205,10 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
                 <CheckCircle size={18} /> Accept
               </motion.button>
               <motion.button
-                onClick={() => onReject(request._id)}
+                onClick={() => {
+                  onReject(request._id);
+                  toast.error("Request rejected.");
+                }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-all flex items-center justify-center gap-2"
@@ -219,7 +218,6 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
             </>
           )}
 
-          {/* Accepted – chat + possible completion */}
           {request.status === "accepted" && (
             <>
               <motion.button
@@ -236,7 +234,6 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
                 )}
               </motion.button>
 
-              {/* Completion Logic */}
               {(() => {
                 const hasCompleted = isSender
                   ? request.senderCompleted
@@ -264,8 +261,6 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
             </>
           )}
 
-          {/* Completed – rating */}
-          {/* Completed – rating */}
           {isCompleted && canRate === true && (
             <motion.button
               onClick={() => setShowRatingModal(true)}
@@ -285,7 +280,6 @@ const BarterRequestCard = ({ request, onAccept, onReject, type, onUpdate }) => {
         </div>
       </motion.div>
 
-      {/* Rating modal */}
       {showRatingModal && (
         <RatingModal
           isOpen={showRatingModal}
