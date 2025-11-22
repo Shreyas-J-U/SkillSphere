@@ -2,8 +2,20 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Zap } from "lucide-react";
 import { SignIn } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
+  // Show toast when sign-in is clicked
+  const handleStartLogin = () => {
+    toast.loading("Signing you in...");
+  };
+
+  // Show toast if there's an error
+  const handleError = (err) => {
+    toast.dismiss(); // Clear loading
+    toast.error(err?.errors?.[0]?.longMessage || "Login failed");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated Background Elements */}
@@ -51,16 +63,22 @@ const LoginPage = () => {
           </p>
         </div>
 
-        <SignIn
-          signUpUrl="/register"
-          forceRedirectUrl="/dashboard"
-          appearance={{
-            elements: {
-              rootBox: "w-full",
-              card: "w-full shadow-2xl border border-gray-100 rounded-2xl",
-            },
-          }}
-        />
+        <div onClick={handleStartLogin}>
+          <SignIn
+            signUpUrl="/register"
+            forceRedirectUrl="/dashboard"
+            afterSignIn={() => toast.success("Welcome back!")}
+            afterSignUp={() => toast.success("Account created successfully")}
+            appearance={{
+              elements: {
+                rootBox: "w-full",
+                card: "w-full shadow-2xl border border-gray-100 rounded-2xl",
+              },
+            }}
+            routing="hash"
+            onError={handleError}
+          />
+        </div>
       </motion.div>
     </div>
   );

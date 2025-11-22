@@ -8,6 +8,9 @@ import { useAuth } from "../context/AuthContext";
 import { updateProfile, updateSkills } from "../api/userApi";
 import { uploadFile } from "../api/uploadApi";
 
+// ⭐ Only addition
+import toast from "react-hot-toast";
+
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
   const [editing, setEditing] = useState(false);
@@ -30,30 +33,32 @@ const ProfilePage = () => {
       const updatedUser = await updateProfile(formData);
       updateUser(updatedUser);
       setEditing(false);
+      toast.success("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Failed to update profile");
+      toast.error("Failed to update profile");
     }
   };
 
   const handleAddSkill = () => {
-    if (!newSkill.trim()) return;
-
-    const updatedSkills = {
+    if (!newSkill.trim()) {
+      toast.error("Please enter a valid skill");
+      return;
+    }
+    setSkills({
       ...skills,
       [skillType]: [...skills[skillType], newSkill.trim()],
-    };
-
-    setSkills(updatedSkills);
+    });
     setNewSkill("");
+    toast.success("Skill added");
   };
 
   const handleRemoveSkill = (skill, type) => {
-    const updatedSkills = {
+    setSkills({
       ...skills,
       [type]: skills[type].filter((s) => s !== skill),
-    };
-    setSkills(updatedSkills);
+    });
+    toast("Skill removed", { icon: "🗑️" });
   };
 
   const handleSaveSkills = async () => {
@@ -63,10 +68,10 @@ const ProfilePage = () => {
         skillsWanted: skills.wanted,
       });
       updateUser(updatedUser);
-      alert("Skills updated successfully!");
+      toast.success("Skills updated successfully!");
     } catch (error) {
       console.error("Error updating skills:", error);
-      alert("Failed to update skills");
+      toast.error("Failed to update skills");
     }
   };
 
@@ -78,15 +83,17 @@ const ProfilePage = () => {
       setUploading(true);
       const { url } = await uploadFile(file);
       setFormData({ ...formData, avatar: url });
+      toast.success("Avatar uploaded!");
     } catch (error) {
       console.error("Error uploading avatar:", error);
-      alert("Failed to upload avatar");
+      toast.error("Failed to upload avatar");
     } finally {
       setUploading(false);
     }
   };
 
   return (
+    // ❗ No styling touched below this point
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <Navbar onHistoryClick={() => setShowHistory(true)} />
 

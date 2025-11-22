@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { X, Star } from "lucide-react";
+import toast from "react-hot-toast"; // 👉 Added
 import api from "../utils/api";
 
 const RatingModal = ({
@@ -33,11 +34,13 @@ const RatingModal = ({
 
     if (rating === 0) {
       setError("Please select a rating");
+      toast.error("Please select a rating before submitting.");
       return;
     }
 
     setLoading(true);
     setError("");
+    const loadingToast = toast.loading("Submitting rating...");
 
     try {
       const response = await api.post("/ratings", {
@@ -52,8 +55,12 @@ const RatingModal = ({
         onRatingSubmitted(response.data);
       }
 
+      toast.dismiss(loadingToast);
+      toast.success("Rating submitted successfully!");
       onClose();
     } catch (err) {
+      toast.dismiss(loadingToast);
+      toast.error(err.response?.data?.message || "Failed to submit rating");
       setError(err.response?.data?.message || "Failed to submit rating");
     } finally {
       setLoading(false);
@@ -167,8 +174,7 @@ const RatingModal = ({
                 </span>
                 {renderStars(
                   categories[category],
-                  (value) =>
-                    setCategories({ ...categories, [category]: value }),
+                  (value) => setCategories({ ...categories, [category]: value }),
                   20
                 )}
               </div>

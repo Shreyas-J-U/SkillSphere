@@ -2,8 +2,26 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Zap } from "lucide-react";
 import { SignUp } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
 
 const RegisterPage = () => {
+  // Show loading toast when registration starts
+  const handleStartSignup = () => {
+    toast.loading("Creating your account...");
+  };
+
+  // Success toast after account creation
+  const handleAfterSignup = () => {
+    toast.dismiss();
+    toast.success("Account created! Redirecting...");
+  };
+
+  // Handle Clerk errors
+  const handleError = (err) => {
+    toast.dismiss();
+    toast.error(err?.errors?.[0]?.longMessage || "Signup failed. Please try again.");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated Background Elements */}
@@ -51,16 +69,21 @@ const RegisterPage = () => {
           </p>
         </div>
 
-        <SignUp
-          signInUrl="/login"
-          forceRedirectUrl="/dashboard"
-          appearance={{
-            elements: {
-              rootBox: "w-full",
-              card: "w-full shadow-2xl border border-gray-100 rounded-2xl",
-            },
-          }}
-        />
+        {/* Sign-Up Form with Toast Events */}
+        <div onClick={handleStartSignup}>
+          <SignUp
+            signInUrl="/login"
+            forceRedirectUrl="/dashboard"
+            afterSignUp={handleAfterSignup}
+            onError={handleError}
+            appearance={{
+              elements: {
+                rootBox: "w-full",
+                card: "w-full shadow-2xl border border-gray-100 rounded-2xl",
+              },
+            }}
+          />
+        </div>
       </motion.div>
     </div>
   );
