@@ -23,6 +23,7 @@ import {
 } from "../api/barterApi";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
+import toast from "react-hot-toast";
 
 const DashboardPage = () => {
   const [users, setUsers] = useState([]);
@@ -133,13 +134,15 @@ const DashboardPage = () => {
         sent: [request, ...prev.sent],
       }));
 
+      toast.success(`Barter request sent to ${selectedUser.name}!`);
+
       setShowRequestModal(false);
       setRequestMessage("");
       setSelectedSkills({ offered: "", requested: "" });
       setSelectedUser(null);
     } catch (error) {
       console.error("Error sending request:", error);
-      alert(error.response?.data?.message || "Failed to send request");
+      toast.error(error.response?.data?.message || "Failed to send request");
     }
   };
 
