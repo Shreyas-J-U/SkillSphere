@@ -1,7 +1,19 @@
-import { Server } from 'socket.io';
-import jwt from 'jsonwebtoken';
-import Message from './models/Message.js';
-import Chat from './models/Chat.js';
+import { Server } from "socket.io";
+import { createClerkClient } from "@clerk/clerk-sdk-node";
+import User from "./models/User.js";
+import Message from "./models/Message.js";
+import Chat from "./models/Chat.js";
+
+// Lazy initialization to ensure env vars are loaded first
+let clerkClient = null;
+const getClerkClient = () => {
+  if (!clerkClient) {
+    clerkClient = createClerkClient({
+      secretKey: process.env.CLERK_SECRET_KEY,
+    });
+  }
+  return clerkClient;
+};
 
 // Store user socket mappings
 const userSocketMap = new Map();
@@ -9,31 +21,43 @@ const userSocketMap = new Map();
 export const initializeSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:5173',
-      credentials: true
-    }
+      origin: process.env.CLIENT_URL || "http://localhost:5173",
+      credentials: true,
+    },
   });
 
   // Socket authentication middleware
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     const token = socket.handshake.auth.token;
-    
+
     if (!token) {
-      return next(new Error('Authentication error'));
+      return next(new Error("Authentication error: No token provided"));
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      socket.userId = decoded.id;
+      // Verify Clerk token
+      const decoded = await getClerkClient().verifyToken(token);
+      const clerkUserId = decoded.sub;
+
+      // Find MongoDB user by Clerk ID
+      const user = await User.findOne({ clerkId: clerkUserId });
+
+      if (!user) {
+        return next(new Error("Authentication error: User not found"));
+      }
+
+      // Attach MongoDB User ID to socket
+      socket.userId = user._id.toString();
       next();
     } catch (error) {
-      next(new Error('Authentication error'));
+      console.error("Socket auth error:", error.message);
+      next(new Error("Authentication error: Invalid token"));
     }
   });
 
-  io.on('connection', (socket) => {
+  io.on("connection", (socket) => {
     console.log(`✅ User connected: ${socket.userId}`);
-    
+
     // Store user socket mapping
     userSocketMap.set(socket.userId, socket.id);
 
@@ -41,19 +65,19 @@ export const initializeSocket = (server) => {
     socket.join(socket.userId);
 
     // Join chat room
-    socket.on('join_chat', (chatId) => {
+    socket.on("join_chat", (chatId) => {
       socket.join(chatId);
       console.log(`User ${socket.userId} joined chat ${chatId}`);
     });
 
     // Leave chat room
-    socket.on('leave_chat', (chatId) => {
+    socket.on("leave_chat", (chatId) => {
       socket.leave(chatId);
       console.log(`User ${socket.userId} left chat ${chatId}`);
     });
 
     // Send message
-    socket.on('send_message', async (data) => {
+    socket.on("send_message", async (data) => {
       try {
         const { chatId, content, messageType, mediaUrl } = data;
 
@@ -62,60 +86,64 @@ export const initializeSocket = (server) => {
           chat: chatId,
           sender: socket.userId,
           content,
-          messageType: messageType || 'text',
-          mediaUrl
+          messageType: messageType || "text",
+          mediaUrl,
         });
 
         // Update chat's last message
         await Chat.findByIdAndUpdate(chatId, {
           lastMessage: message._id,
-          lastMessageAt: new Date()
+          lastMessageAt: new Date(),
         });
 
-        const populatedMessage = await Message.findById(message._id)
-          .populate('sender', 'name avatar');
+        const populatedMessage = await Message.findById(message._id).populate(
+          "sender",
+          "name avatar"
+        );
 
         // Emit to all users in the chat room
-        io.to(chatId).emit('new_message', populatedMessage);
+        io.to(chatId).emit("new_message", populatedMessage);
 
         // Notify receiver via their personal room if they are not in the chat
         const chatDoc = await Chat.findById(chatId);
         if (chatDoc) {
-          const receiverId = chatDoc.participants.find(p => p.toString() !== socket.userId);
+          const receiverId = chatDoc.participants.find(
+            (p) => p.toString() !== socket.userId
+          );
           if (receiverId) {
-            io.to(receiverId.toString()).emit('new_notification', { 
-              type: 'message',
-              count: 1 // Increment by 1
+            io.to(receiverId.toString()).emit("new_notification", {
+              type: "message",
+              count: 1, // Increment by 1
             });
           }
         }
       } catch (error) {
-        console.error('Send message error:', error);
-        socket.emit('message_error', { message: 'Failed to send message' });
+        console.error("Send message error:", error);
+        socket.emit("message_error", { message: "Failed to send message" });
       }
     });
 
     // Typing indicator
-    socket.on('typing', (data) => {
+    socket.on("typing", (data) => {
       const { chatId, isTyping } = data;
-      socket.to(chatId).emit('user_typing', {
+      socket.to(chatId).emit("user_typing", {
         userId: socket.userId,
-        isTyping
+        isTyping,
       });
     });
 
     // Session readiness
-    socket.on('session_ready', (data) => {
+    socket.on("session_ready", (data) => {
       const { sessionId, barterRequestId, participants } = data;
-      
+
       // Notify other participant
-      participants.forEach(participantId => {
+      participants.forEach((participantId) => {
         if (participantId !== socket.userId) {
           const participantSocketId = userSocketMap.get(participantId);
           if (participantSocketId) {
-            io.to(participantSocketId).emit('participant_ready', {
+            io.to(participantSocketId).emit("participant_ready", {
               sessionId,
-              userId: socket.userId
+              userId: socket.userId,
             });
           }
         }
@@ -123,27 +151,27 @@ export const initializeSocket = (server) => {
     });
 
     // Barter request notification
-    socket.on('barter_request_sent', (data) => {
+    socket.on("barter_request_sent", (data) => {
       const { receiverId, request } = data;
       const receiverSocketId = userSocketMap.get(receiverId);
-      
+
       if (receiverSocketId) {
-        io.to(receiverSocketId).emit('new_barter_request', request);
+        io.to(receiverSocketId).emit("new_barter_request", request);
       }
     });
 
     // Barter status update notification
-    socket.on('barter_status_updated', (data) => {
+    socket.on("barter_status_updated", (data) => {
       const { userId, request } = data;
       const userSocketId = userSocketMap.get(userId);
-      
+
       if (userSocketId) {
-        io.to(userSocketId).emit('barter_status_changed', request);
+        io.to(userSocketId).emit("barter_status_changed", request);
       }
     });
 
     // Disconnect
-    socket.on('disconnect', () => {
+    socket.on("disconnect", () => {
       console.log(`❌ User disconnected: ${socket.userId}`);
       userSocketMap.delete(socket.userId);
     });
