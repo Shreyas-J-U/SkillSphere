@@ -1,21 +1,29 @@
 // Load environment variables FIRST before any other imports
-import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Explicitly load .env file
-const envPath = join(__dirname, ".env");
-console.log("🔍 Loading .env from:", envPath);
-const result = dotenv.config({ path: envPath });
+// Load dotenv only in development (local)
+if (process.env.NODE_ENV !== "production") {
+  try {
+    const envPath = join(__dirname, ".env");
+    console.log("🔍 Loading .env from:", envPath);
 
-if (result.error) {
-  console.error("❌ Error loading .env file:", result.error);
+    const dotenv = await import("dotenv");
+    const result = dotenv.config({ path: envPath });
+
+    if (result.error) {
+      console.error("⚠️ Error loading .env:", result.error);
+    } else {
+      console.log("✅ .env loaded successfully");
+    }
+  } catch (err) {
+    console.error("⚠️ dotenv import error:", err);
+  }
 } else {
-  console.log("✅ .env file loaded successfully");
-  console.log("📧 EMAIL_USER from dotenv:", result.parsed?.EMAIL_USER);
+  console.log("🚀 Production mode — skipping .env load (using system ENV variables)");
 }
 
 import express from "express";
@@ -34,17 +42,6 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import ratingRoutes from "./routes/ratingRoutes.js";
 import communityRoutes from "./routes/communityRoutes.js";
-
-// Debug: Verify Clerk keys are loaded
-console.log("🔍 Environment check:");
-console.log(
-  "  CLERK_SECRET_KEY:",
-  process.env.CLERK_SECRET_KEY ? "✅ Loaded" : "❌ Missing"
-);
-console.log(
-  "  CLERK_PUBLISHABLE_KEY:",
-  process.env.CLERK_PUBLISHABLE_KEY ? "✅ Loaded" : "❌ Missing"
-);
 
 // Initialize Express app
 const app = express();
@@ -97,7 +94,7 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error("Error:", err);
+  console.error("🔥 Error:", err);
   res.status(err.status || 500).json({
     message: err.message || "Internal server error",
     ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
@@ -111,7 +108,7 @@ server.listen(PORT, () => {
   console.log(`
 ╔═══════════════════════════════════════════╗
 ║                                           ║
-║   🚀 SkillSphere Server Running!         ║
+║   🚀 SkillSphere Server Running!          ║
 ║                                           ║
 ║   📡 Port: ${PORT}                        ║
 ║   🌍 Environment: ${process.env.NODE_ENV || "development"}           ║
