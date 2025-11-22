@@ -1,9 +1,12 @@
-import express from 'express';
-import { uploadFile, uploadMiddleware } from '../controllers/uploadController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import express from "express";
+import {
+  uploadFile,
+  uploadMiddleware,
+} from "../controllers/uploadController.js";
+import { requireAuth, attachUser } from "../middleware/clerkAuth.js";
 
 const router = express.Router();
 
-router.post('/', protect, uploadMiddleware, uploadFile);
+router.post("/", requireAuth, attachUser, uploadMiddleware, uploadFile);
 
 export default router;
