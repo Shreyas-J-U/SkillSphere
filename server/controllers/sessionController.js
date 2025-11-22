@@ -1,5 +1,5 @@
-import Session from '../models/Session.js';
-import BarterRequest from '../models/BarterRequest.js';
+import Session from "../models/Session.js";
+import BarterRequest from "../models/BarterRequest.js";
 
 // @desc    Create session
 // @route   POST /api/sessions
@@ -9,28 +9,35 @@ export const createSession = async (req, res) => {
     const { barterRequestId, meetLink, scheduledAt } = req.body;
 
     // Check if barter request exists and is accepted
-    const barterRequest = await BarterRequest.findById(barterRequestId)
-      .populate('sender receiver');
+    const barterRequest = await BarterRequest.findById(
+      barterRequestId
+    ).populate("sender receiver");
 
     if (!barterRequest) {
-      return res.status(404).json({ message: 'Barter request not found' });
+      return res.status(404).json({ message: "Barter request not found" });
     }
 
-    if (barterRequest.status !== 'accepted') {
-      return res.status(400).json({ message: 'Barter request must be accepted' });
+    if (barterRequest.status !== "accepted") {
+      return res
+        .status(400)
+        .json({ message: "Barter request must be accepted" });
     }
 
     // Check if user is part of this barter
-    if (barterRequest.sender._id.toString() !== req.user._id.toString() &&
-        barterRequest.receiver._id.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized' });
+    if (
+      barterRequest.sender._id.toString() !== req.user._id.toString() &&
+      barterRequest.receiver._id.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({ message: "Not authorized" });
     }
 
     // Check if session already exists
     let session = await Session.findOne({ barterRequest: barterRequestId });
 
     if (session) {
-      return res.status(400).json({ message: 'Session already exists for this barter' });
+      return res
+        .status(400)
+        .json({ message: "Session already exists for this barter" });
     }
 
     // Create session
@@ -40,21 +47,21 @@ export const createSession = async (req, res) => {
       scheduledAt,
       participants: [
         { user: barterRequest.sender._id, isReady: false },
-        { user: barterRequest.receiver._id, isReady: false }
+        { user: barterRequest.receiver._id, isReady: false },
       ],
       meetingInstances: [],
       currentInstance: 0,
-      totalDuration: 0
+      totalDuration: 0,
     });
 
     const populatedSession = await Session.findById(session._id)
-      .populate('barterRequest')
-      .populate('participants.user', 'name email avatar');
+      .populate("barterRequest")
+      .populate("participants.user", "name email avatar");
 
     res.status(201).json(populatedSession);
   } catch (error) {
-    console.error('Create session error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Create session error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -63,27 +70,32 @@ export const createSession = async (req, res) => {
 // @access  Private
 export const getSessionByBarterId = async (req, res) => {
   try {
-    const session = await Session.findOne({ barterRequest: req.params.barterId })
-      .populate('barterRequest')
-      .populate('participants.user', 'name email avatar');
+    // Try to find an existing session for this barter request
+    let session = await Session.findOne({ barterRequest: req.params.barterId })
+      .populate("barterRequest")
+      .populate("participants.user", "name email avatar");
 
+    // If no session exists, inform the client so it can offer to create one
     if (!session) {
-      return res.status(404).json({ message: 'Session not found' });
+      return res.status(200).json({
+        message: "No session exists for this barter request",
+        canCreate: true,
+        barterId: req.params.barterId,
+      });
     }
 
-    // Check if user is participant
+    // Ensure the requesting user is a participant of the session
     const isParticipant = session.participants.some(
-      p => p.user._id.toString() === req.user._id.toString()
+      (p) => p.user._id.toString() === req.user._id.toString()
     );
-
     if (!isParticipant) {
-      return res.status(403).json({ message: 'Not authorized' });
+      return res.status(403).json({ message: "Not authorized" });
     }
 
     res.json(session);
   } catch (error) {
-    console.error('Get session error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Get session error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -92,35 +104,41 @@ export const getSessionByBarterId = async (req, res) => {
 // @access  Private
 export const startMeetingInstance = async (req, res) => {
   try {
-    const session = await Session.findById(req.params.id)
-      .populate('participants.user', 'name email avatar');
+    const session = await Session.findById(req.params.id).populate(
+      "participants.user",
+      "name email avatar"
+    );
 
     if (!session) {
-      return res.status(404).json({ message: 'Session not found' });
+      return res.status(404).json({ message: "Session not found" });
     }
 
     // Check if user is participant
     const isParticipant = session.participants.some(
-      p => p.user._id.toString() === req.user._id.toString()
+      (p) => p.user._id.toString() === req.user._id.toString()
     );
 
     if (!isParticipant) {
-      return res.status(403).json({ message: 'Not authorized' });
+      return res.status(403).json({ message: "Not authorized" });
     }
 
     // Check if both participants are ready
-    const allReady = session.participants.every(p => p.isReady);
+    const allReady = session.participants.every((p) => p.isReady);
     if (!allReady) {
-      return res.status(400).json({ message: 'Both participants must be ready' });
+      return res
+        .status(400)
+        .json({ message: "Both participants must be ready" });
     }
 
     // Check if there's already an in-progress instance
     const hasInProgress = session.meetingInstances.some(
-      instance => instance.status === 'in-progress'
+      (instance) => instance.status === "in-progress"
     );
 
     if (hasInProgress) {
-      return res.status(400).json({ message: 'A meeting is already in progress' });
+      return res
+        .status(400)
+        .json({ message: "A meeting is already in progress" });
     }
 
     // Create new meeting instance
@@ -128,22 +146,22 @@ export const startMeetingInstance = async (req, res) => {
     session.meetingInstances.push({
       instanceNumber: newInstanceNumber,
       startedAt: new Date(),
-      status: 'in-progress'
+      status: "in-progress",
     });
 
     session.currentInstance = newInstanceNumber;
-    session.status = 'in-progress';
+    session.status = "in-progress";
 
     await session.save();
 
     const populatedSession = await Session.findById(session._id)
-      .populate('barterRequest')
-      .populate('participants.user', 'name email avatar');
+      .populate("barterRequest")
+      .populate("participants.user", "name email avatar");
 
     res.json(populatedSession);
   } catch (error) {
-    console.error('Start meeting error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Start meeting error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -155,25 +173,25 @@ export const endMeetingInstance = async (req, res) => {
     const session = await Session.findById(req.params.id);
 
     if (!session) {
-      return res.status(404).json({ message: 'Session not found' });
+      return res.status(404).json({ message: "Session not found" });
     }
 
     // Check if user is participant
     const isParticipant = session.participants.some(
-      p => p.user.toString() === req.user._id.toString()
+      (p) => p.user.toString() === req.user._id.toString()
     );
 
     if (!isParticipant) {
-      return res.status(403).json({ message: 'Not authorized' });
+      return res.status(403).json({ message: "Not authorized" });
     }
 
     // Find the in-progress instance
     const inProgressInstance = session.meetingInstances.find(
-      instance => instance.status === 'in-progress'
+      (instance) => instance.status === "in-progress"
     );
 
     if (!inProgressInstance) {
-      return res.status(400).json({ message: 'No meeting in progress' });
+      return res.status(400).json({ message: "No meeting in progress" });
     }
 
     // Calculate duration
@@ -184,28 +202,28 @@ export const endMeetingInstance = async (req, res) => {
     // Update instance
     inProgressInstance.endedAt = endTime;
     inProgressInstance.duration = durationMinutes;
-    inProgressInstance.status = 'completed';
+    inProgressInstance.status = "completed";
 
     // Update total duration
     session.totalDuration += durationMinutes;
 
     // Reset ready status for next meeting
-    session.participants.forEach(p => {
+    session.participants.forEach((p) => {
       p.isReady = false;
     });
 
-    session.status = 'scheduled'; // Ready for next instance
+    session.status = "scheduled"; // Ready for next instance
 
     await session.save();
 
     const populatedSession = await Session.findById(session._id)
-      .populate('barterRequest')
-      .populate('participants.user', 'name email avatar');
+      .populate("barterRequest")
+      .populate("participants.user", "name email avatar");
 
     res.json(populatedSession);
   } catch (error) {
-    console.error('End meeting error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("End meeting error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -214,20 +232,22 @@ export const endMeetingInstance = async (req, res) => {
 // @access  Private
 export const markUserReady = async (req, res) => {
   try {
-    const session = await Session.findById(req.params.id)
-      .populate('participants.user', 'name email avatar');
+    const session = await Session.findById(req.params.id).populate(
+      "participants.user",
+      "name email avatar"
+    );
 
     if (!session) {
-      return res.status(404).json({ message: 'Session not found' });
+      return res.status(404).json({ message: "Session not found" });
     }
 
     // Find participant
     const participant = session.participants.find(
-      p => p.user._id.toString() === req.user._id.toString()
+      (p) => p.user._id.toString() === req.user._id.toString()
     );
 
     if (!participant) {
-      return res.status(403).json({ message: 'Not authorized' });
+      return res.status(403).json({ message: "Not authorized" });
     }
 
     participant.isReady = true;
@@ -235,13 +255,13 @@ export const markUserReady = async (req, res) => {
     await session.save();
 
     const populatedSession = await Session.findById(session._id)
-      .populate('barterRequest')
-      .populate('participants.user', 'name email avatar');
+      .populate("barterRequest")
+      .populate("participants.user", "name email avatar");
 
     res.json(populatedSession);
   } catch (error) {
-    console.error('Mark ready error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Mark ready error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -253,28 +273,28 @@ export const completeSession = async (req, res) => {
     const session = await Session.findById(req.params.id);
 
     if (!session) {
-      return res.status(404).json({ message: 'Session not found' });
+      return res.status(404).json({ message: "Session not found" });
     }
 
     // Check if user is participant
     const isParticipant = session.participants.some(
-      p => p.user.toString() === req.user._id.toString()
+      (p) => p.user.toString() === req.user._id.toString()
     );
 
     if (!isParticipant) {
-      return res.status(403).json({ message: 'Not authorized' });
+      return res.status(403).json({ message: "Not authorized" });
     }
 
-    session.status = 'completed';
+    session.status = "completed";
     await session.save();
 
     const populatedSession = await Session.findById(session._id)
-      .populate('barterRequest')
-      .populate('participants.user', 'name email avatar');
+      .populate("barterRequest")
+      .populate("participants.user", "name email avatar");
 
     res.json(populatedSession);
   } catch (error) {
-    console.error('Complete session error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Complete session error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
