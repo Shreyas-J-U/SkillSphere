@@ -1,13 +1,19 @@
-import express from 'express';
-import { getOrCreateChat, getUserChats, getChatMessages, sendMessage, getUnreadCount } from '../controllers/chatController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import express from "express";
+import {
+  getOrCreateChat,
+  getUserChats,
+  getChatMessages,
+  sendMessage,
+  getUnreadCount,
+} from "../controllers/chatController.js";
+import { requireAuth, attachUser } from "../middleware/clerkAuth.js";
 
 const router = express.Router();
 
-router.post('/', protect, getOrCreateChat);
-router.get('/', protect, getUserChats);
-router.get('/unread/count', protect, getUnreadCount);
-router.get('/:id/messages', protect, getChatMessages);
-router.post('/:id/messages', protect, sendMessage);
+router.post("/", requireAuth, attachUser, getOrCreateChat);
+router.get("/", requireAuth, attachUser, getUserChats);
+router.get("/unread/count", requireAuth, attachUser, getUnreadCount);
+router.get("/:id/messages", requireAuth, attachUser, getChatMessages);
+router.post("/:id/messages", requireAuth, attachUser, sendMessage);
 
 export default router;
