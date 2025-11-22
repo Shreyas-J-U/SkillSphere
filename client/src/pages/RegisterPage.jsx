@@ -73,7 +73,7 @@ const RegisterPage = () => {
         <div onClick={handleStartSignup}>
           <SignUp
             signInUrl="/login"
-            forceRedirectUrl="/dashboard"
+            forceRedirectUrl="/profile"
             afterSignUp={handleAfterSignup}
             onError={handleError}
             appearance={{
