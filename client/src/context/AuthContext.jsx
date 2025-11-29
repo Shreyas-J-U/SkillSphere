@@ -25,6 +25,30 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Setup Axios interceptor to inject token on every request
+  useEffect(() => {
+    const interceptorId = api.interceptors.request.use(
+      async (config) => {
+        if (isSignedIn) {
+          try {
+            const token = await getToken();
+            if (token) {
+              config.headers.Authorization = `Bearer ${token}`;
+            }
+          } catch (error) {
+            console.error("Error getting token in interceptor:", error);
+          }
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    return () => {
+      api.interceptors.request.eject(interceptorId);
+    };
+  }, [getToken, isSignedIn]);
+
   // Sync Clerk user with our own MongoDB user record
   useEffect(() => {
     // console.log("AuthContext: Effect triggered", { isClerkLoaded, isSignedIn });
@@ -37,9 +61,7 @@ export const AuthProvider = ({ children }) => {
         if (!user) setLoading(true);
 
         try {
-          const token = await getToken();
-          // console.log("AuthContext: Got token");
-          api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+          // Token is injected by interceptor
           const { data } = await api.get("/auth/me");
           // console.log("AuthContext: User synced", data);
           setUser(data);
