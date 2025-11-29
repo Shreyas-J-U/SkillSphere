@@ -28,6 +28,8 @@ import {
   PlayCircle,
   Cpu,
   Award as Trophy,
+  Video,
+  Briefcase,
 } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -54,11 +56,11 @@ const LIVE_SWAPS = [
 
 const TYPING_SKILLS = [
   "Python",
+  "UI/UX Design",
   "Guitar",
-  "French",
-  "Photoshop",
-  "Calculus",
-  "Marketing",
+  "Data Structures",
+  "Public Speaking",
+  "Machine Learning",
 ];
 
 const Button = ({ children, className = "", variant = "primary", onClick }) => {
@@ -92,6 +94,7 @@ export default function LandingPage() {
   const [typingIndex, setTypingIndex] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
 
+  // Refs (no TypeScript generics)
   const mainRef = useRef(null);
   const heroRef = useRef(null);
   const navRef = useRef(null);
@@ -146,10 +149,10 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Advanced GSAP Animations
+  // GSAP Animations
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      // Navbar with blur effect
+      // Navbar
       gsap.from(navRef.current, {
         y: -100,
         opacity: 0,
@@ -157,7 +160,7 @@ export default function LandingPage() {
         ease: "power4.out",
       });
 
-      // Hero staggered entrance
+      // Hero
       const heroTl = gsap.timeline();
       heroTl
         .from(".hero-badge", {
@@ -195,7 +198,7 @@ export default function LandingPage() {
           "-=0.8"
         );
 
-      // Floating cards with parallax
+      // Floating cards
       gsap.to(".floating-card-1", {
         y: -30,
         x: 10,
@@ -217,13 +220,15 @@ export default function LandingPage() {
         delay: 1,
       });
 
-      // Stats counter animation
-      gsap.utils.toArray(".stat-value").forEach((stat) => {
+      // Stats counter animation (no TS generics)
+      gsap.utils.toArray(".stat-value").forEach((el) => {
+        const stat = el;
         ScrollTrigger.create({
           trigger: stat,
           start: "top 80%",
           onEnter: () => {
             const target = stat.getAttribute("data-target");
+            if (!target) return;
             gsap.to(stat, {
               innerText: target,
               duration: 2,
@@ -234,8 +239,9 @@ export default function LandingPage() {
         });
       });
 
-      // Features with magnetic effect
-      gsap.utils.toArray(".feature-card").forEach((card, i) => {
+      // Feature cards
+      gsap.utils.toArray(".feature-card").forEach((el, i) => {
+        const card = el;
         gsap.from(card, {
           y: 100,
           opacity: 0,
@@ -250,7 +256,6 @@ export default function LandingPage() {
           },
         });
 
-        // Parallax effect on scroll
         gsap.to(card, {
           y: -20,
           scrollTrigger: {
@@ -262,9 +267,10 @@ export default function LandingPage() {
         });
       });
 
-      // Steps with timeline reveal
+      // Steps
       const steps = gsap.utils.toArray(".step-card");
-      steps.forEach((step, i) => {
+      steps.forEach((el, i) => {
+        const step = el;
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: step,
@@ -300,12 +306,13 @@ export default function LandingPage() {
           );
       });
 
-      // Testimonials with scale effect
-      gsap.utils.toArray(".testimonial-card").forEach((card, i) => {
+      // Testimonials
+      gsap.utils.toArray(".testimonial-card").forEach((el, i) => {
+        const card = el;
         gsap.from(card, {
-          scale: 0.8,
+          scale: 0.9,
           opacity: 0,
-          y: 50,
+          y: 40,
           duration: 0.8,
           ease: "back.out(1.5)",
           scrollTrigger: {
@@ -313,11 +320,11 @@ export default function LandingPage() {
             start: "top 85%",
             toggleActions: "play none none reverse",
           },
-          delay: i * 0.1,
+          delay: i * 0.08,
         });
       });
 
-      // CTA with magnetic reveal
+      // CTA
       gsap.from(".cta-section", {
         scale: 0.9,
         opacity: 0,
@@ -390,13 +397,19 @@ export default function LandingPage() {
             </div>
 
             <div className="hidden md:flex items-center space-x-8">
-              {["Features", "How it Works", "Community"].map((item) => (
+              {[
+                { label: "Features", href: "#features" },
+                { label: "How it Works", href: "#how-it-works" },
+                { label: "Community", href: "#community" },
+                { label: "Jobs", href: "#jobs" },
+                { label: "Trust & Safety", href: "#trust" },
+              ].map((item) => (
                 <a
-                  key={item}
-                  href={`#${item.toLowerCase().replace(/\s/g, "-")}`}
+                  key={item.label}
+                  href={item.href}
                   className="text-slate-600 hover:text-purple-600 font-medium transition-colors relative group"
                 >
-                  {item}
+                  {item.label}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-600 transition-all group-hover:w-full" />
                 </a>
               ))}
@@ -441,14 +454,20 @@ export default function LandingPage() {
         {isNavOpen && (
           <div className="md:hidden bg-white border-b border-slate-200 absolute w-full">
             <div className="px-4 pt-2 pb-8 space-y-4">
-              {["Features", "How it Works", "Community"].map((item) => (
+              {[
+                { label: "Features", href: "#features" },
+                { label: "How it Works", href: "#how-it-works" },
+                { label: "Community", href: "#community" },
+                { label: "Jobs", href: "#jobs" },
+                { label: "Trust & Safety", href: "#trust" },
+              ].map((item) => (
                 <a
-                  key={item}
-                  href={`#${item.toLowerCase().replace(/\s/g, "-")}`}
+                  key={item.label}
+                  href={item.href}
                   onClick={() => setIsNavOpen(false)}
                   className="block text-lg font-medium text-slate-700 hover:text-purple-600 px-2 py-2"
                 >
-                  {item}
+                  {item.label}
                 </a>
               ))}
               <div className="pt-4 flex flex-col gap-3">
@@ -495,25 +514,29 @@ export default function LandingPage() {
             <div className="hero-badge flex justify-center mb-8">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-purple-100 shadow-lg text-purple-700 font-medium text-sm">
                 <Sparkles size={16} className="animate-pulse" />
-                <span>Join 10,000+ Students Learning Smarter</span>
+                <span>Student skill barter • No payments • Just learning</span>
               </div>
             </div>
 
             <h1 className="hero-title text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 tracking-tight mb-8 leading-[1.1]">
-              <span className="word inline-block">Trade</span>{" "}
+              <span className="word inline-block">Swap</span>{" "}
               <span className="word inline-block">Skills.</span>{" "}
               <br className="hidden md:block" />
               <span className="word inline-block bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500">
-                Master
+                Build
               </span>{" "}
               <span className="word inline-block bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
-                Anything.
+                Careers.
               </span>
             </h1>
 
             <p className="hero-desc text-xl md:text-2xl text-slate-600 mb-6 max-w-2xl mx-auto leading-relaxed">
-              The world's first decentralized skill exchange platform. Learn
-              what you need by teaching what you know.
+              SkillSphere is a student-first barter platform where you{" "}
+              <span className="font-semibold text-slate-800">
+                teach what you know
+              </span>{" "}
+              to learn what you want — with real-time chat, GMeet sessions, and
+              a skill-based job recommender.
             </p>
 
             <div className="hero-desc mb-10 flex items-center justify-center gap-2 text-lg md:text-xl text-slate-600 flex-wrap">
@@ -530,7 +553,7 @@ export default function LandingPage() {
                 </span>
                 <span className="animate-pulse ml-1">|</span>
               </div>
-              <span>by teaching what you know</span>
+              <span>by bartering your own skills.</span>
             </div>
 
             <div className="hero-btns flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
@@ -538,14 +561,14 @@ export default function LandingPage() {
                 onClick={handleGetStarted}
                 className="w-full sm:w-auto text-lg px-10 shadow-2xl"
               >
-                Start Swapping <ArrowRight size={20} />
+                Start Skill Swapping <ArrowRight size={20} />
               </Button>
               <Button
                 variant="outline"
                 onClick={handleExplore}
                 className="w-full sm:w-auto text-lg px-10 group"
               >
-                Explore Skills{" "}
+                Explore Skill Matches{" "}
                 <PlayCircle
                   size={20}
                   className="group-hover:scale-110 transition-transform"
@@ -553,7 +576,9 @@ export default function LandingPage() {
               </Button>
             </div>
 
+            {/* Hero Visual */}
             <div className="hero-visual relative mx-auto max-w-4xl h-[400px] hidden md:block">
+              {/* Central swap icon */}
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-white rounded-full shadow-2xl flex items-center justify-center z-20">
                 <div
                   className={`w-24 h-24 rounded-full bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center`}
@@ -565,40 +590,53 @@ export default function LandingPage() {
                 </div>
               </div>
 
+              {/* Left card: Chat */}
               <div className="floating-card-1 absolute left-0 top-10 bg-white p-5 rounded-2xl shadow-2xl border-2 border-purple-100 w-64 z-10 backdrop-blur-sm">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-2xl shadow-lg">
-                    🎸
+                    💬
                   </div>
                   <div>
                     <div className="font-bold text-slate-800">
-                      Alex Rodriguez
+                      Realtime Chat
                     </div>
-                    <div className="text-xs text-slate-500">Guitar Expert</div>
+                    <div className="text-xs text-slate-500">
+                      Break the ice instantly.
+                    </div>
                   </div>
                 </div>
-                <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  "Need help with React hooks!"
+                <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100 flex items-center gap-2">
+                  <MessageCircle size={16} className="text-purple-500" />
+                  "Hey! Can you help me with DSA this weekend?"
                 </div>
               </div>
 
+              {/* Right card: GMeet */}
               <div className="floating-card-2 absolute right-0 bottom-10 bg-white p-5 rounded-2xl shadow-2xl border-2 border-purple-100 w-64 z-10 backdrop-blur-sm">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-2xl shadow-lg">
-                    💻
+                    📅
                   </div>
                   <div>
-                    <div className="font-bold text-slate-800">Sarah Chen</div>
+                    <div className="font-bold text-slate-800">
+                      Scheduled GMeet
+                    </div>
                     <div className="text-xs text-slate-500">
-                      React Developer
+                      Auto-created session links.
                     </div>
                   </div>
                 </div>
-                <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  "I want to learn Guitar! 🎵"
+                <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100 flex flex-col gap-1">
+                  <span className="font-semibold text-slate-800">
+                    Sat • 7:00 PM
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    DSA + Resume review • 60 mins
+                  </span>
                 </div>
               </div>
 
+              {/* SVG connection line */}
               <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
                 <defs>
                   <linearGradient
@@ -633,30 +671,35 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 border-y border-slate-200 bg-white/80 backdrop-blur-sm">
+      {/* Trust Strip / Stats */}
+      <section className="py-10 border-y border-slate-200 bg-white/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
               {
-                label: "Active Learners",
+                label: "Verified Students",
                 value: 10,
                 display: "10K+",
                 icon: Users,
               },
               {
-                label: "Skills Shared",
+                label: "Skill Swaps",
                 value: 500,
                 display: "500+",
                 icon: BookOpen,
               },
               {
-                label: "Money Saved",
-                value: 20,
-                display: "$2M+",
-                icon: TrendingUp,
+                label: "Sessions Hosted",
+                value: 30,
+                display: "30K+",
+                icon: Video,
               },
-              { label: "Success Rate", value: 98, display: "98%", icon: Award },
+              {
+                label: "Avg. Rating",
+                value: 49,
+                display: "4.9/5",
+                icon: Award,
+              },
             ].map((stat, i) => (
               <div key={i} className="text-center group cursor-default">
                 <div className="flex justify-center mb-3 text-slate-400 group-hover:text-purple-600 transition-colors transform group-hover:scale-110 duration-300">
@@ -684,7 +727,7 @@ export default function LandingPage() {
         <div className="flex items-center gap-2 mb-4 justify-center">
           <div className="w-3 h-3 rounded-full animate-pulse bg-green-500 shadow-lg shadow-green-500/50" />
           <span className="text-sm font-bold text-slate-700 uppercase tracking-wider">
-            Live Swaps Happening Now
+            Live Skill Swaps Happening Now
           </span>
         </div>
         <div className="relative flex overflow-x-hidden">
@@ -705,7 +748,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Core Features Section */}
       <section
         id="features"
         className="py-32 relative bg-gradient-to-b from-white to-slate-50"
@@ -716,15 +759,17 @@ export default function LandingPage() {
               FEATURES
             </div>
             <h2 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
-              Why Choose SkillSphere?
+              Built for Students. Powered by Community.
             </h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-              Break free from expensive courses. Experience a revolutionary,
-              community-driven way to master new skills.
+              SkillSphere brings together skill bartering, real-time
+              communication, structured sessions, and career outcomes — all in
+              one trusted platform.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* Big feature card */}
             <div className="feature-card md:col-span-2 md:row-span-2 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-12 rounded-3xl shadow-2xl border-2 border-purple-200 hover:shadow-purple-300/50 transition-all duration-500 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-64 h-64 bg-purple-400/10 rounded-full blur-3xl group-hover:bg-purple-400/20 transition-all" />
               <div className="relative z-10">
@@ -734,19 +779,21 @@ export default function LandingPage() {
                   <Cpu className="text-white w-10 h-10" />
                 </div>
                 <h3 className="text-4xl font-bold text-slate-900 mb-4">
-                  AI-Powered Matching
+                  AI Skill Matching & Job Recommender
                 </h3>
                 <p className="text-lg text-slate-600 leading-relaxed mb-6">
-                  Our advanced algorithm analyzes your skills, learning goals,
-                  availability, and personality to find your perfect learning
-                  partner. Get instant compatibility scores and suggested lesson
-                  plans.
+                  Our engine understands what you{" "}
+                  <span className="font-semibold text-slate-800">
+                    know, teach, and learn
+                  </span>{" "}
+                  — then recommends the right peers, sessions, and job
+                  opportunities tailored to your skill graph.
                 </p>
                 <div className="flex flex-wrap gap-3">
                   {[
-                    "Smart Recommendations",
-                    "Instant Compatibility",
-                    "Personalized Plans",
+                    "Skill-based role suggestions",
+                    "Smart barter pairings",
+                    "Portfolio-aware matches",
                   ].map((tag, i) => (
                     <span
                       key={i}
@@ -760,18 +807,19 @@ export default function LandingPage() {
               </div>
             </div>
 
+            {/* Small feature cards */}
             <div className="feature-card bg-white p-8 rounded-3xl shadow-xl border-2 border-slate-100 hover:shadow-2xl hover:border-purple-200 transition-all duration-500 group">
               <div
                 className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center mb-6 shadow-lg transform group-hover:scale-110 transition-transform`}
               >
-                <Shield className="text-white w-8 h-8" />
+                <MessageCircle className="text-white w-8 h-8" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                Verified Community
+                Realtime Chat
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Student ID verification and peer reviews ensure a safe, trusted
-                environment for all exchanges.
+                Talk instantly, share resources, clarify doubts, and plan your
+                next swap in a few messages.
               </p>
             </div>
 
@@ -779,34 +827,40 @@ export default function LandingPage() {
               <div
                 className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center mb-6 shadow-lg transform group-hover:scale-110 transition-transform`}
               >
-                <Target className="text-white w-8 h-8" />
+                <Video className="text-white w-8 h-8" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                Track Progress
+                GMeet Sessions
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Built-in roadmaps, session trackers, and milestone celebrations
-                keep you motivated.
+                Schedule and join Google Meet sessions directly from SkillSphere
+                — no messy link sharing.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Secondary grid */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
               {
-                icon: Clock,
-                title: "Flexible Scheduling",
-                desc: "Book sessions that fit your busy student life with our smart calendar",
+                icon: Shield,
+                title: "Verified & Safe",
+                desc: "Student verification, reporting, and transparent profiles keep the community safe.",
               },
               {
-                icon: Globe,
-                title: "Global Network",
-                desc: "Connect with passionate learners from 50+ universities worldwide",
+                icon: Target,
+                title: "Structured Skill Barter",
+                desc: "Define what you teach, what you learn, and how many sessions you’re committing to.",
+              },
+              {
+                icon: Clock,
+                title: "Smart Scheduling",
+                desc: "Automatic time zone handling, reminders, and session history.",
               },
               {
                 icon: Heart,
-                title: "Free Forever",
-                desc: "No hidden fees, subscriptions, or credit card required. Ever.",
+                title: "Community First",
+                desc: "Join topic-based communities, events, and peer circles around shared interests.",
               },
             ].map((feature, i) => (
               <div
@@ -826,23 +880,23 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* University Badges */}
+          {/* University / Campus trust */}
           <div className="mt-20 text-center">
             <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-8">
-              Trusted by students at 50+ Universities
+              Already used by students from campuses like
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-12 opacity-50">
+            <div className="flex flex-wrap justify-center items-center gap-8 opacity-60 text-sm">
               {[
-                "Harvard",
-                "MIT",
-                "Stanford",
-                "Berkeley",
-                "Yale",
-                "Princeton",
+                "IIT",
+                "NIT",
+                "BITS",
+                "IIIT",
+                "State Universities",
+                "Global Campuses",
               ].map((uni, i) => (
                 <div
                   key={i}
-                  className="text-2xl font-bold text-slate-400 hover:text-slate-600 transition-colors"
+                  className="px-4 py-2 rounded-full border border-slate-200 text-gray-800 bg-white/70"
                 >
                   🎓 {uni}
                 </div>
@@ -865,11 +919,11 @@ export default function LandingPage() {
               HOW IT WORKS
             </div>
             <h2 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
-              Start Learning in 3 Easy Steps
+              Start Swapping in 3 Steps
             </h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              No hidden fees, no commitments. Just pure knowledge exchange
-              between passionate learners.
+              No payments. No negotiation headaches. Just structured,
+              student-friendly skill exchanges.
             </p>
           </div>
 
@@ -877,38 +931,38 @@ export default function LandingPage() {
             {[
               {
                 step: "01",
-                title: "Create Your Profile",
-                desc: "Tell us what you're passionate about teaching and what you want to learn. Add your availability, skill level, and learning preferences. Our AI will start finding your perfect matches immediately.",
+                title: "Create Your Skill Card",
+                desc: "Tell SkillSphere what you can teach and what you want to learn — including your level, interests, and time preferences.",
                 image:
                   "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop&q=80",
                 features: [
-                  "List unlimited skills",
-                  "Set your schedule",
-                  "Add portfolio samples",
+                  "Add teach & learn skills",
+                  "Set your weekly availability",
+                  "Link Github, Behance, etc.",
                 ],
               },
               {
                 step: "02",
-                title: "Get Matched Instantly",
-                desc: "Browse smart recommendations or let our algorithm suggest perfect barter partners. See compatibility scores, reviews, and sample lesson plans before you connect.",
+                title: "Match, Chat & Schedule",
+                desc: "Get AI-based suggestions for barter partners. Start chatting instantly, then pick a time — SkillSphere handles the GMeet link.",
                 image:
-                  "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=600&fit=crop&q=80",
+                  "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop&q=80",
                 features: [
-                  "AI compatibility matching",
-                  "Verified student profiles",
-                  "Real-time availability",
+                  "Realtime chat & notifications",
+                  "GMeet links auto-generated",
+                  "Session reminders & history",
                 ],
               },
               {
                 step: "03",
-                title: "Learn & Teach",
-                desc: "Schedule sessions using our integrated calendar. Meet online or in person. Track your progress with built-in roadmaps and earn badges as you master new skills.",
+                title: "Learn, Track & Unlock Jobs",
+                desc: "Complete sessions, earn badges, and build a verified skill graph that powers your job recommendations.",
                 image:
                   "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&h=600&fit=crop&q=80",
                 features: [
-                  "Video call integration",
-                  "Progress tracking",
-                  "Achievement system",
+                  "Session feedback & ratings",
+                  "Progress dashboard",
+                  "Skill-aligned job suggestions",
                 ],
               },
             ].map((item, i) => (
@@ -972,7 +1026,7 @@ export default function LandingPage() {
           {/* Process Infographic */}
           <div className="mt-32 bg-white rounded-3xl p-12 shadow-2xl border-2 border-slate-100">
             <h3 className="text-3xl font-bold text-center text-slate-900 mb-12">
-              The Perfect Exchange Process
+              The SkillSphere Flow
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-center">
               {[
@@ -983,12 +1037,12 @@ export default function LandingPage() {
                 },
                 {
                   icon: MessageCircle,
-                  label: "Connect",
+                  label: "Chat",
                   color: "from-purple-500 to-purple-600",
                 },
                 {
                   icon: BookOpen,
-                  label: "Schedule",
+                  label: "Session",
                   color: "from-pink-500 to-pink-600",
                 },
                 {
@@ -998,7 +1052,7 @@ export default function LandingPage() {
                 },
                 {
                   icon: Trophy,
-                  label: "Master",
+                  label: "Opportunities",
                   color: "from-green-500 to-green-600",
                 },
               ].map((item, i) => (
@@ -1019,7 +1073,128 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Jobs / Recommender Highlight */}
+      <section
+        id="jobs"
+        className="py-24 bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 text-white relative overflow-hidden"
+      >
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full blur-3xl" />
+          <div
+            className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl"
+            style={{ animationDelay: "1s" }}
+          />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-sm font-semibold mb-6">
+                <Briefcase size={16} />
+                <span>Skill-based job recommender</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+                Turn every session into a future opportunity.
+              </h2>
+              <p className="text-lg text-white/80 mb-6">
+                As you teach, learn, and get rated by peers, your SkillSphere
+                profile becomes a{" "}
+                <span className="font-semibold">live proof of work</span>. Our
+                recommender uses that to suggest internships, freelance gigs,
+                and roles that match what you actually do — not just what’s on
+                your CV.
+              </p>
+              <ul className="space-y-3 text-sm md:text-base text-white/80 mb-8">
+                {[
+                  "Match with roles based on real skills, not just marks",
+                  "Showcase completed swaps, feedback, and badges",
+                  "Opt-in only: you control what recruiters see",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <Check className="w-5 h-5 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button
+                variant="white"
+                onClick={handleExplore}
+                className="text-base px-8 py-4"
+              >
+                View Recommended Roles <ArrowRight size={18} />
+              </Button>
+            </div>
+
+            <div className="flex-1 w-full">
+              <div className="bg-white/5 border border-white/10 rounded-3xl p-6 shadow-2xl backdrop-blur-md">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-sm font-semibold text-white/70">
+                    Sample Matches for You
+                  </span>
+                  <span className="text-xs text-emerald-300 flex items-center gap-1">
+                    <Sparkles size={14} /> Based on your Skill Card
+                  </span>
+                </div>
+                <div className="space-y-4">
+                  {[
+                    {
+                      role: "Frontend Intern",
+                      company: "Campus Startup",
+                      match: "92% skill match",
+                      tags: ["React", "Tailwind", "Design Systems"],
+                    },
+                    {
+                      role: "Content + Strategy Intern",
+                      company: "EdTech Collective",
+                      match: "88% skill match",
+                      tags: ["Presentation", "Copywriting", "Marketing"],
+                    },
+                    {
+                      role: "ML Research Assistant",
+                      company: "University Lab",
+                      match: "85% skill match",
+                      tags: ["Python", "ML", "Data Structures"],
+                    },
+                  ].map((job, i) => (
+                    <div
+                      key={i}
+                      className="border border-white/10 rounded-2xl p-4 bg-white/5 hover:bg-white/10 transition-all"
+                    >
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
+                          <div className="font-semibold">{job.role}</div>
+                          <div className="text-xs text-white/60">
+                            {job.company}
+                          </div>
+                        </div>
+                        <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-400/30">
+                          {job.match}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs mt-2">
+                        {job.tags.map((t) => (
+                          <span
+                            key={t}
+                            className="px-3 py-1 rounded-full bg-white/5 border border-white/10"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-4 text-[11px] text-white/50">
+                  Example preview based on anonymized data. Actual matches
+                  depend on your skills & activity.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Community / Testimonials */}
       <section
         id="community"
         className="py-32 bg-white relative overflow-hidden"
@@ -1032,51 +1207,88 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-20">
             <div className="inline-block mb-4 px-4 py-2 rounded-full bg-purple-100 text-purple-600 font-semibold text-sm">
-              SUCCESS STORIES
+              COMMUNITY & STORIES
             </div>
             <h2 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
-              Real Students, Real Results
+              Learn with people like you.
             </h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              See how SkillSphere is transforming the way students learn on
-              campuses worldwide.
+              SkillSphere is more than 1:1 swaps. Join circles, practice
+              together, and build friendships around skills and careers.
             </p>
           </div>
 
+          {/* Community circles mini-preview */}
+          <div className="mb-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                title: "Dev & DSA Circle",
+                members: "1.2K members",
+                desc: "Daily DSA doubts, mock interviews, and project reviews.",
+              },
+              {
+                title: "Design & Portfolio Club",
+                members: "800+ members",
+                desc: "Live design reviews, Figma jams, and case study practice.",
+              },
+              {
+                title: "Career Launch Lounge",
+                members: "1.5K members",
+                desc: "Resume reviews, referrals, job post discussions, and AMA sessions.",
+              },
+            ].map((circle, i) => (
+              <div
+                key={i}
+                className="bg-slate-50 border border-slate-200 rounded-3xl p-5 flex flex-col gap-3"
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <h3 className="font-semibold text-slate-900">
+                    {circle.title}
+                  </h3>
+                  <span className="text-xs px-3 py-1 rounded-full bg-green-100 text-green-700 flex items-center gap-1">
+                    <Users size={14} /> {circle.members}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-600">{circle.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Testimonials */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
                 name: "Michael Chen",
-                role: "Computer Science Major • MIT",
+                role: "CS • MIT",
                 content:
-                  "I was struggling with Calculus but excelled at Java. Found a Math major who wanted to learn coding. We both got A's! The structured approach and progress tracking kept us accountable.",
+                  "I swapped Java mentorship for Calculus help. We scheduled weekly GMeet sessions and tracked progress in SkillSphere. Both of us ended the semester with A grades.",
                 avatar: "MC",
                 rating: 5,
                 saved: "$1,200",
               },
               {
                 name: "Priya Patel",
-                role: "Design Student • Stanford",
+                role: "Design • Stanford",
                 content:
-                  "Taught Photoshop to a Marketing student who helped me with my resume and personal branding. The match was perfect - we had similar schedules and learning styles.",
+                  "Taught Figma and portfolio building, and in return got help with LinkedIn, cold emails, and interview prep. The barter model just makes sense for students.",
                 avatar: "PP",
                 rating: 5,
                 saved: "$800",
               },
               {
                 name: "James Wilson",
-                role: "Business Major • Harvard",
+                role: "Business • Harvard",
                 content:
-                  "Learning Spanish from a native speaker while teaching Excel and data analysis. It's incredible how much faster you learn when there's a real exchange happening.",
+                  "SkillSphere gives you realistic practice, not just theory. I learned Spanish from a native student and helped him with Excel and analytics.",
                 avatar: "JW",
                 rating: 5,
                 saved: "$1,500",
               },
               {
                 name: "Sofia Rodriguez",
-                role: "Music Student • Berkeley",
+                role: "Music • Berkeley",
                 content:
-                  "I traded guitar lessons for help with my chemistry coursework. My tutor was patient and the platform made scheduling so easy. Passed with an A-!",
+                  "Swapped guitar lessons for chemistry tutoring. The structured sessions and reminders made it easy to stay consistent.",
                 avatar: "SR",
                 rating: 5,
                 saved: "$950",
@@ -1085,16 +1297,16 @@ export default function LandingPage() {
                 name: "David Kim",
                 role: "Engineering • Georgia Tech",
                 content:
-                  "The AI matching is spot-on. Found someone with the exact skills I needed who wanted to learn what I could teach. We've been meeting twice a week for 3 months now.",
+                  "The real-time chat plus GMeet integration is smooth. No clutter, no confusion. Found a perfect swap buddy in two days.",
                 avatar: "DK",
                 rating: 5,
                 saved: "$2,100",
               },
               {
                 name: "Emma Thompson",
-                role: "Psychology Major • Yale",
+                role: "Psychology • Yale",
                 content:
-                  "Traded French tutoring for Python lessons. The community is incredibly supportive and the verification process made me feel safe. Highly recommend!",
+                  "Traded French for Python. What surprised me most was how friendly and safe the community felt. The verification and rating systems really help.",
                 avatar: "ET",
                 rating: 5,
                 saved: "$1,400",
@@ -1144,77 +1356,131 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats Showcase */}
-      <section className="py-24 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full blur-3xl animate-pulse" />
-          <div
-            className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse"
-            style={{ animationDelay: "1s" }}
-          />
-        </div>
+      {/* Trust & Safety */}
+      <section
+        id="trust"
+        className="py-24 bg-slate-50 border-y border-slate-200"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <div className="inline-block mb-4 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 font-semibold text-sm">
+                TRUST & SAFETY
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+                Safe exchanges. Real students. Honest feedback.
+              </h2>
+              <p className="text-lg text-slate-600 mb-6">
+                SkillSphere is designed so you can focus on learning. We handle
+                the rest — verification, ratings, and controls.
+              </p>
+              <div className="space-y-4 text-sm md:text-base">
+                {[
+                  "Student verification using institutional IDs and checks.",
+                  "Session reports, blocking and abuse handling built-in.",
+                  "Transparent ratings after each session, visible on profiles.",
+                  "Privacy-first approach: you control your visibility and data.",
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 text-emerald-600 mt-0.5" />
+                    <span className="text-slate-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              The SkillSphere Impact
-            </h2>
-            <p className="text-xl text-white/80">
-              Making quality education accessible to everyone
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { value: "50M+", label: "Learning Hours", icon: Clock },
-              { value: "98%", label: "Satisfaction Rate", icon: Heart },
-              { value: "$5M+", label: "Student Savings", icon: TrendingUp },
-              { value: "150+", label: "Countries", icon: Globe },
-            ].map((stat, i) => (
-              <div key={i} className="text-center group">
-                <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/20 transition-all group-hover:scale-110 duration-300">
-                    <stat.icon className="w-8 h-8" />
+            <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-200">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                    <Shield className="w-6 h-6 text-emerald-700" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-slate-900">
+                      Safety Snapshot
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      Last 30 days on SkillSphere
+                    </div>
                   </div>
                 </div>
-                <div className="text-5xl font-black mb-2">{stat.value}</div>
-                <div className="text-white/70 font-medium">{stat.label}</div>
+                <span className="text-xs px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  99.3% positive sessions
+                </span>
               </div>
-            ))}
+
+              <div className="space-y-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">
+                    Sessions rated 4★ and above
+                  </span>
+                  <span className="font-semibold text-slate-900">96%</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden mb-2">
+                  <div className="h-full w-[96%] bg-gradient-to-r from-emerald-400 to-emerald-600" />
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">
+                    Issues resolved within 24h
+                  </span>
+                  <span className="font-semibold text-slate-900">98%</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden mb-2">
+                  <div className="h-full w-[98%] bg-gradient-to-r from-blue-400 to-blue-600" />
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">
+                    Users with verified status
+                  </span>
+                  <span className="font-semibold text-slate-900">87%</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="h-full w-[87%] bg-gradient-to-r from-purple-400 to-purple-600" />
+                </div>
+              </div>
+
+              <p className="mt-6 text-xs text-slate-500">
+                Metrics shown are representative sample values. Your campus view
+                may show your own community’s stats.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Comparison Section */}
-      <section className="py-32 bg-slate-50">
+      <section className="py-32 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
-              Why SkillSphere Beats Traditional Learning
+              Why SkillSphere beats traditional learning.
             </h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              Compare the old way of learning with the SkillSphere advantage
+              See how the old model compares to a student-driven, barter-based
+              skill network.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Traditional Learning */}
-            <div className="bg-white p-8 rounded-3xl shadow-lg border-2 border-red-200">
+            <div className="bg-slate-50 p-8 rounded-3xl shadow-lg border-2 border-red-200">
               <div className="text-center mb-6">
                 <div className="w-16 h-16 mx-auto bg-red-100 rounded-2xl flex items-center justify-center mb-4">
                   <X className="w-8 h-8 text-red-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-slate-900">
-                  Traditional Courses
+                  Traditional Tutors / Courses
                 </h3>
               </div>
               <ul className="space-y-4">
                 {[
-                  "Pay $50-200 per hour for tutors",
-                  "Rigid schedules don't fit student life",
-                  "One-way learning with no exchange",
-                  "Generic teaching methods",
-                  "No community or peer support",
+                  "₹500–₹2000 per hour for quality help",
+                  "One-way learning — you’re always the “student”",
+                  "No community or peer accountability",
+                  "Rigid schedules and rescheduling chaos",
+                  "No direct connection to real job opportunities",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-slate-600">
                     <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
@@ -1239,11 +1505,11 @@ export default function LandingPage() {
               </div>
               <ul className="space-y-4 relative z-10">
                 {[
-                  "100% Free - Exchange skills, not money",
-                  "Flexible scheduling around YOUR time",
-                  "Two-way learning: teach & learn",
-                  "Personalized AI matching",
-                  "Vibrant community of 10K+ students",
+                  "₹0 cost — you pay with your skills, not money",
+                  "Two-way learning: you’re a student and a mentor",
+                  "Realtime chat, GMeet sessions, and active communities",
+                  "Flexible scheduling built for student life",
+                  "Skill-based job recommender as you grow",
                 ].map((item, i) => (
                   <li
                     key={i}
@@ -1277,16 +1543,16 @@ export default function LandingPage() {
               <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-sm mb-8">
                 <Rocket className="w-5 h-5" />
                 <span className="font-semibold">
-                  Join 10,000+ Students Today
+                  Join SkillSphere in under 2 minutes
                 </span>
               </div>
 
               <h2 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
-                Ready to Skill Up?
+                Ready to swap your way to success?
               </h2>
               <p className="text-xl md:text-2xl mb-12 text-white/90 max-w-2xl mx-auto leading-relaxed">
-                Start learning for free. No credit card required. Join the
-                future of education.
+                Create your Skill Card, start a chat, schedule your first swap,
+                and unlock a network that grows with you.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -1302,22 +1568,22 @@ export default function LandingPage() {
                   onClick={handleExplore}
                   className="px-12 py-5 rounded-2xl font-bold text-lg text-white border-2 border-white/30 hover:bg-white/10 backdrop-blur-sm transition-all hover:scale-105"
                 >
-                  Explore Skills
+                  Browse Skills & Swaps
                 </button>
               </div>
 
               <div className="flex items-center justify-center gap-8 text-sm text-white/80 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Check size={16} />
-                  <span>Free Forever</span>
+                  <span>Free for students</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check size={16} />
-                  <span>No Credit Card</span>
+                  <span>No credit card required</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check size={16} />
-                  <span>Join in 2 Minutes</span>
+                  <span>Verified community</span>
                 </div>
               </div>
             </div>
@@ -1339,9 +1605,9 @@ export default function LandingPage() {
                 <span className="font-bold text-2xl">SkillSphere</span>
               </div>
               <p className="text-slate-400 mb-6 leading-relaxed">
-                The world's first decentralized skill exchange platform built
-                exclusively for students. Learn anything by teaching what you
-                know.
+                SkillSphere is a student-first barter platform for skills,
+                sessions, and opportunities. Learn anything, teach what you
+                love, and grow your career — together.
               </p>
               <div className="flex gap-4">
                 {["Twitter", "LinkedIn", "Instagram", "Discord"].map(
@@ -1366,8 +1632,8 @@ export default function LandingPage() {
                 {[
                   "Browse Skills",
                   "How it Works",
-                  "Success Stories",
-                  "Mobile App",
+                  "Community Circles",
+                  "Job Recommender",
                 ].map((link) => (
                   <li key={link}>
                     <a
@@ -1390,22 +1656,25 @@ export default function LandingPage() {
                 Resources
               </h4>
               <ul className="space-y-3 text-sm">
-                {["Help Center", "Community Forum", "Blog", "API Docs"].map(
-                  (link) => (
-                    <li key={link}>
-                      <a
-                        href="#"
-                        className="hover:text-white transition-colors flex items-center gap-2 group"
-                      >
-                        <ChevronRight
-                          size={14}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        />
-                        {link}
-                      </a>
-                    </li>
-                  )
-                )}
+                {[
+                  "Help Center",
+                  "Community Guidelines",
+                  "Blog",
+                  "Campus Programs",
+                ].map((link) => (
+                  <li key={link}>
+                    <a
+                      href="#"
+                      className="hover:text-white transition-colors flex items-center gap-2 group"
+                    >
+                      <ChevronRight
+                        size={14}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      />
+                      {link}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -1439,13 +1708,14 @@ export default function LandingPage() {
 
           <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
             <p>
-              © 2025 SkillSphere Inc. All rights reserved. Made with{" "}
+              © {new Date().getFullYear()} SkillSphere. All rights reserved.
+              Built by students, for students, with{" "}
               <Heart
                 size={14}
                 className="inline text-red-500"
                 fill="currentColor"
-              />{" "}
-              by students, for students.
+              />
+              .
             </p>
             <div className="flex items-center gap-6">
               <span className="flex items-center gap-2">
