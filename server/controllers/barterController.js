@@ -55,14 +55,16 @@ export const createBarterRequest = async (req, res) => {
       skillRequested
     );
 
+    let emailStatus = { sent: true };
     if (emailResult && !emailResult.success) {
       console.warn(
         "⚠️ Barter request created but email notification failed:",
         emailResult.error
       );
+      emailStatus = { sent: false, error: emailResult.error };
     }
 
-    res.status(201).json(populatedRequest);
+    res.status(201).json({ ...populatedRequest.toObject(), emailStatus });
   } catch (error) {
     console.error("Create barter request error:", error);
     res.status(500).json({ message: "Server error" });
