@@ -25,7 +25,8 @@ api.interceptors.response.use(
       // Token expired or invalid
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      window.location.href = "/login";
+      // Don't reload page automatically - let the UI handle the auth state change
+      // window.location.href = "/login";
     }
     return Promise.reject(error);
   }
