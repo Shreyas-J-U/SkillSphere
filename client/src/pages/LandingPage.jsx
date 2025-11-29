@@ -696,8 +696,8 @@ export default function LandingPage() {
               },
               {
                 label: "Avg. Rating",
-                value: 49,
-                display: "4.9/5",
+                value: 4,
+                display: "4+",
                 icon: Award,
               },
             ].map((stat, i) => (
