@@ -1,8 +1,8 @@
-import { motion } from 'framer-motion';
-import { Send, User as UserIcon, Star } from 'lucide-react';
-import SkillTag from './SkillTag';
+import { motion } from "framer-motion";
+import { Send, User as UserIcon, Star } from "lucide-react";
+import SkillTag from "./SkillTag";
 
-const UserCard = ({ user, onSendRequest }) => {
+const UserCard = ({ user, onSendRequest, isOnline }) => {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -13,24 +13,36 @@ const UserCard = ({ user, onSendRequest }) => {
       <div className="flex items-center space-x-4 mb-4">
         <div className="relative flex-shrink-0">
           <img
-            src={user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+            src={
+              user.avatar ||
+              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            }
             alt={user.name}
             className="w-16 h-16 rounded-full border-2 border-blue-500 shadow-md object-cover"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+              e.target.src =
+                "https://cdn-icons-png.flaticon.com/512/149/149071.png";
             }}
           />
-          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
+          {isOnline && (
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
+          )}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-xl font-bold text-gray-900 truncate">{user.name}</h3>
+          <h3 className="text-xl font-bold text-gray-900 truncate">
+            {user.name}
+          </h3>
           {/* <p className="text-sm text-gray-500 truncate">{user.email}</p> */}
           {user.averageRating > 0 && (
             <div className="flex items-center space-x-1 mt-1">
               <Star size={14} className="fill-yellow-400 text-yellow-400" />
-              <span className="text-sm font-semibold text-gray-700">{user.averageRating.toFixed(1)}</span>
-              <span className="text-xs text-gray-500">({user.totalRatings})</span>
+              <span className="text-sm font-semibold text-gray-700">
+                {user.averageRating.toFixed(1)}
+              </span>
+              <span className="text-xs text-gray-500">
+                ({user.totalRatings})
+              </span>
             </div>
           )}
         </div>
@@ -48,7 +60,9 @@ const UserCard = ({ user, onSendRequest }) => {
         <div className="h-20">
           {user.skillsOffered && user.skillsOffered.length > 0 ? (
             <>
-              <p className="text-sm text-gray-700 mb-2 font-semibold">Offers:</p>
+              <p className="text-sm text-gray-700 mb-2 font-semibold">
+                Offers:
+              </p>
               <div className="flex flex-wrap gap-2">
                 {user.skillsOffered.slice(0, 3).map((skill, index) => (
                   <SkillTag key={index} skill={skill} type="offered" />
@@ -61,14 +75,18 @@ const UserCard = ({ user, onSendRequest }) => {
               </div>
             </>
           ) : (
-            <p className="text-sm text-gray-400 italic">No skills offered listed</p>
+            <p className="text-sm text-gray-400 italic">
+              No skills offered listed
+            </p>
           )}
         </div>
 
         <div className="h-20">
           {user.skillsWanted && user.skillsWanted.length > 0 ? (
             <>
-              <p className="text-sm text-gray-700 mb-2 font-semibold">Wants to learn:</p>
+              <p className="text-sm text-gray-700 mb-2 font-semibold">
+                Wants to learn:
+              </p>
               <div className="flex flex-wrap gap-2">
                 {user.skillsWanted.slice(0, 3).map((skill, index) => (
                   <SkillTag key={index} skill={skill} type="wanted" />
@@ -81,7 +99,9 @@ const UserCard = ({ user, onSendRequest }) => {
               </div>
             </>
           ) : (
-            <p className="text-sm text-gray-400 italic">No learning goals listed</p>
+            <p className="text-sm text-gray-400 italic">
+              No learning goals listed
+            </p>
           )}
         </div>
       </div>
