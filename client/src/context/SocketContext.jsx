@@ -15,6 +15,7 @@ export const useSocket = () => {
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const { getToken, isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -42,6 +43,18 @@ export const SocketProvider = ({ children }) => {
             setConnected(false);
           });
 
+          newSocket.on("get_online_users", (users) => {
+            setOnlineUsers(users);
+          });
+
+          newSocket.on("user_online", (userId) => {
+            setOnlineUsers((prev) => [...prev, userId]);
+          });
+
+          newSocket.on("user_offline", (userId) => {
+            setOnlineUsers((prev) => prev.filter((id) => id !== userId));
+          });
+
           newSocket.on("connect_error", (error) => {
             console.error("Socket connection error:", error);
           });
@@ -55,6 +68,7 @@ export const SocketProvider = ({ children }) => {
           socket.close();
           setSocket(null);
           setConnected(false);
+          setOnlineUsers([]);
         }
       }
     };
@@ -71,6 +85,7 @@ export const SocketProvider = ({ children }) => {
   const value = {
     socket,
     connected,
+    onlineUsers,
   };
 
   return (
