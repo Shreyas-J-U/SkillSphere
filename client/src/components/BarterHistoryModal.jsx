@@ -1,13 +1,13 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { getBarterRequests } from '../api/barterApi';
-import BarterRequestCard from './BarterRequestCard';
+import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getBarterRequests } from "../api/barterApi";
+import BarterRequestCard from "./BarterRequestCard";
 
 const BarterHistoryModal = ({ isOpen, onClose }) => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState("all");
 
   useEffect(() => {
     if (isOpen) {
@@ -21,14 +21,14 @@ const BarterHistoryModal = ({ isOpen, onClose }) => {
       const data = await getBarterRequests();
       setRequests(data);
     } catch (error) {
-      console.error('Error fetching history:', error);
+      console.error("Error fetching history:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredRequests = requests.filter(req => {
-    if (filter === 'all') return true;
+  const filteredRequests = requests.filter((req) => {
+    if (filter === "all") return true;
     return req.status === filter;
   });
 
@@ -52,10 +52,12 @@ const BarterHistoryModal = ({ isOpen, onClose }) => {
             exit={{ opacity: 0, scale: 0.9 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl border border-gray-200">
+            <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl border border-gray-200 mx-4">
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
-                <h2 className="text-2xl font-bold text-gray-900">Barter History</h2>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                  Barter History
+                </h2>
                 <button
                   onClick={onClose}
                   className="p-2 hover:bg-white/80 rounded-lg transition-all"
@@ -65,33 +67,35 @@ const BarterHistoryModal = ({ isOpen, onClose }) => {
               </div>
 
               {/* Filters */}
-              <div className="p-6 border-b border-gray-200 bg-gray-50">
+              <div className="p-4 md:p-6 border-b border-gray-200 bg-gray-50">
                 <div className="flex flex-wrap gap-2">
-                  {['all', 'pending', 'accepted', 'completed', 'rejected'].map((status) => (
-                    <motion.button
-                      key={status}
-                      onClick={() => setFilter(status)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`px-4 py-2 rounded-xl font-semibold transition-all ${
-                        filter === status
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                      }`}
-                    >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </motion.button>
-                  ))}
+                  {["all", "pending", "accepted", "completed", "rejected"].map(
+                    (status) => (
+                      <motion.button
+                        key={status}
+                        onClick={() => setFilter(status)}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base rounded-xl font-semibold transition-all ${
+                          filter === status
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                            : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                        }`}
+                      >
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </motion.button>
+                    )
+                  )}
                 </div>
               </div>
 
               {/* Content */}
-              <div 
-                className="p-6 overflow-y-auto bg-gradient-to-br from-blue-50/30 via-indigo-50/30 to-purple-50/30" 
-                style={{ 
-                  maxHeight: 'calc(90vh - 200px)',
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: '#cbd5e1 #f1f5f9'
+              <div
+                className="p-4 md:p-6 overflow-y-auto bg-gradient-to-br from-blue-50/30 via-indigo-50/30 to-purple-50/30"
+                style={{
+                  maxHeight: "calc(90vh - 200px)",
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "#cbd5e1 #f1f5f9",
                 }}
               >
                 {loading ? (
@@ -103,12 +107,16 @@ const BarterHistoryModal = ({ isOpen, onClose }) => {
                     <p className="text-gray-500">No barter requests found</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {filteredRequests.map((request) => (
                       <BarterRequestCard
                         key={request._id}
                         request={request}
-                        type={request.sender._id === request.sender ? 'sent' : 'received'}
+                        type={
+                          request.sender._id === request.sender
+                            ? "sent"
+                            : "received"
+                        }
                       />
                     ))}
                   </div>
