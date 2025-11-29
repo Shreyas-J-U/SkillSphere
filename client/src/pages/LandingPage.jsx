@@ -640,7 +640,7 @@ export default function LandingPage() {
             {[
               {
                 label: "Active Learners",
-                value: 10000,
+                value: 10,
                 display: "10K+",
                 icon: Users,
               },
@@ -652,7 +652,7 @@ export default function LandingPage() {
               },
               {
                 label: "Money Saved",
-                value: 2000000,
+                value: 20,
                 display: "$2M+",
                 icon: TrendingUp,
               },
