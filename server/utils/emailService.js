@@ -25,6 +25,11 @@ const getTransporter = () => {
     console.log("   ✅ Transporter created successfully");
   } else {
     console.log("   ⚠️ Email not configured");
+    if (process.env.NODE_ENV === "production") {
+      console.log(
+        "   💡 Hint: Make sure EMAIL_USER and EMAIL_PASS are set in your production environment variables."
+      );
+    }
   }
 
   return transporter;
