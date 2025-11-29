@@ -156,7 +156,9 @@ const CommunityPage = () => {
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="bg-white rounded-2xl p-8 shadow-2xl">
           <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-slate-600 font-semibold">Loading community...</p>
+          <p className="mt-4 text-slate-600 font-semibold">
+            Loading community...
+          </p>
         </div>
       </div>
     );
@@ -166,14 +168,16 @@ const CommunityPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="bg-white rounded-2xl p-8 shadow-2xl text-center">
-          <p className="text-slate-600 font-semibold">Please log in to view the community.</p>
+          <p className="text-slate-600 font-semibold">
+            Please log in to view the community.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 overflow-x-hidden">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -191,7 +195,10 @@ const CommunityPage = () => {
                   <div className="relative inline-block mb-4">
                     <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 p-1">
                       <img
-                        src={user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                        src={
+                          user?.avatar ||
+                          "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                        }
                         alt={user?.name}
                         className="w-full h-full rounded-full border-4 border-white object-cover"
                       />
@@ -200,27 +207,41 @@ const CommunityPage = () => {
                       <Sparkles className="w-4 h-4 text-white" />
                     </div>
                   </div>
-                  <h3 className="font-bold text-xl text-slate-900 mb-1">{user?.name}</h3>
-                  <p className="text-sm text-slate-500 mb-4">@{user?.name?.toLowerCase().replace(/\s/g, '')}</p>
+                  <h3 className="font-bold text-xl text-slate-900 mb-1">
+                    {user?.name}
+                  </h3>
+                  <p className="text-sm text-slate-500 mb-4">
+                    @{user?.name?.toLowerCase().replace(/\s/g, "")}
+                  </p>
                 </div>
 
                 {/* User Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-slate-100">
                   <div className="text-center">
                     <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      {posts.filter(p => p.user?._id === user?._id).length}
+                      {posts.filter((p) => p.user?._id === user?._id).length}
                     </div>
                     <div className="text-xs text-slate-500">Posts</div>
                   </div>
                   <div className="text-center border-x border-slate-100">
                     <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      {posts.reduce((acc, p) => acc + (p.likes?.includes(user?._id) ? 1 : 0), 0)}
+                      {posts.reduce(
+                        (acc, p) =>
+                          acc + (p.likes?.includes(user?._id) ? 1 : 0),
+                        0
+                      )}
                     </div>
                     <div className="text-xs text-slate-500">Likes</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      {posts.reduce((acc, p) => acc + (p.comments?.filter(c => c.user?._id === user?._id).length || 0), 0)}
+                      {posts.reduce(
+                        (acc, p) =>
+                          acc +
+                          (p.comments?.filter((c) => c.user?._id === user?._id)
+                            .length || 0),
+                        0
+                      )}
                     </div>
                     <div className="text-xs text-slate-500">Comments</div>
                   </div>
@@ -230,15 +251,25 @@ const CommunityPage = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-3 text-slate-600">
                     <Mail className="w-4 h-4 text-slate-400" />
-                    <span className="truncate">{user?.email || 'Not provided'}</span>
+                    <span className="truncate">
+                      {user?.email || "Not provided"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3 text-slate-600">
                     <MapPin className="w-4 h-4 text-slate-400" />
-                    <span>{user?.location || 'Location not set'}</span>
+                    <span>{user?.location || "Location not set"}</span>
                   </div>
                   <div className="flex items-center gap-3 text-slate-600">
                     <Calendar className="w-4 h-4 text-slate-400" />
-                    <span>Joined {new Date(user?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                    <span>
+                      Joined{" "}
+                      {new Date(
+                        user?.createdAt || Date.now()
+                      ).toLocaleDateString("en-US", {
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </span>
                   </div>
                 </div>
 
@@ -280,7 +311,13 @@ const CommunityPage = () => {
                   <h3 className="font-bold text-slate-900">Trending Topics</h3>
                 </div>
                 <div className="space-y-2">
-                  {['#SkillSwap', '#Python', '#WebDev', '#Design', '#Learning'].map((tag, i) => (
+                  {[
+                    "#SkillSwap",
+                    "#Python",
+                    "#WebDev",
+                    "#Design",
+                    "#Learning",
+                  ].map((tag, i) => (
                     <button
                       key={i}
                       className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors group"
@@ -289,7 +326,9 @@ const CommunityPage = () => {
                         <span className="font-semibold text-slate-700 group-hover:text-purple-600 text-sm">
                           {tag}
                         </span>
-                        <span className="text-xs text-slate-400">{Math.floor(Math.random() * 50 + 10)} posts</span>
+                        <span className="text-xs text-slate-400">
+                          {Math.floor(Math.random() * 50 + 10)} posts
+                        </span>
                       </div>
                     </button>
                   ))}
@@ -314,11 +353,21 @@ const CommunityPage = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white/80 text-sm">Active Today</span>
-                    <span className="font-bold text-xl">{Math.floor(posts.length * 0.6)}</span>
+                    <span className="font-bold text-xl">
+                      {Math.floor(posts.length * 0.6)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white/80 text-sm">Engagement</span>
-                    <span className="font-bold text-xl">{posts.reduce((acc, p) => acc + (p.likes?.length || 0) + (p.comments?.length || 0), 0)}</span>
+                    <span className="font-bold text-xl">
+                      {posts.reduce(
+                        (acc, p) =>
+                          acc +
+                          (p.likes?.length || 0) +
+                          (p.comments?.length || 0),
+                        0
+                      )}
+                    </span>
                   </div>
                 </div>
               </motion.div>
@@ -333,7 +382,7 @@ const CommunityPage = () => {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-2xl shadow-xl p-4 border-2 border-slate-100 mb-6"
             >
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
@@ -398,7 +447,10 @@ const CommunityPage = () => {
               <div className="flex space-x-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 p-0.5 flex-shrink-0">
                   <img
-                    src={user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                    src={
+                      user?.avatar ||
+                      "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                    }
                     alt={user?.name}
                     className="w-full h-full rounded-full border-2 border-white object-cover"
                   />
@@ -442,7 +494,9 @@ const CommunityPage = () => {
 
                     <button
                       onClick={handleCreatePost}
-                      disabled={(!newPostContent.trim() && !selectedImage) || uploading}
+                      disabled={
+                        (!newPostContent.trim() && !selectedImage) || uploading
+                      }
                       className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {uploading ? (
@@ -476,26 +530,35 @@ const CommunityPage = () => {
                       <div className="flex items-center space-x-3">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 p-0.5">
                           <img
-                            src={post.user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                            src={
+                              post.user?.avatar ||
+                              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                            }
                             alt={post.user?.name}
                             className="w-full h-full rounded-full border-2 border-white object-cover"
                           />
                         </div>
                         <div>
-                          <h3 className="font-bold text-slate-900">{post.user?.name}</h3>
+                          <h3 className="font-bold text-slate-900">
+                            {post.user?.name}
+                          </h3>
                           <p className="text-xs text-slate-500">
-                            {new Date(post.createdAt).toLocaleString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
+                            {new Date(post.createdAt).toLocaleString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
                             })}
                           </p>
                         </div>
                       </div>
                       <div className="relative">
                         <button
-                          onClick={() => setShowOptions(showOptions === post._id ? null : post._id)}
+                          onClick={() =>
+                            setShowOptions(
+                              showOptions === post._id ? null : post._id
+                            )
+                          }
                           className="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-50 transition-colors"
                         >
                           <MoreHorizontal size={20} />
@@ -543,7 +606,7 @@ const CommunityPage = () => {
 
                     {/* Post Content */}
                     <div className="px-6 pb-4">
-                      <p className="text-slate-700 whitespace-pre-wrap leading-relaxed mb-4">
+                      <p className="text-slate-700 whitespace-pre-wrap leading-relaxed mb-4 break-words">
                         {post.content}
                       </p>
                       {post.image && (
@@ -568,22 +631,40 @@ const CommunityPage = () => {
                         >
                           <Heart
                             size={22}
-                            fill={post.likes?.includes(user?._id) ? "currentColor" : "none"}
+                            fill={
+                              post.likes?.includes(user?._id)
+                                ? "currentColor"
+                                : "none"
+                            }
                             className="group-hover:scale-110 transition-transform"
                           />
-                          <span className="font-bold">{post.likes?.length || 0}</span>
+                          <span className="font-bold">
+                            {post.likes?.length || 0}
+                          </span>
                         </button>
 
                         <button
-                          onClick={() => setCommentingPostId(commentingPostId === post._id ? null : post._id)}
+                          onClick={() =>
+                            setCommentingPostId(
+                              commentingPostId === post._id ? null : post._id
+                            )
+                          }
                           className="flex items-center space-x-2 text-slate-500 hover:text-blue-600 transition-colors group"
                         >
-                          <MessageSquare size={22} className="group-hover:scale-110 transition-transform" />
-                          <span className="font-bold">{post.comments?.length || 0}</span>
+                          <MessageSquare
+                            size={22}
+                            className="group-hover:scale-110 transition-transform"
+                          />
+                          <span className="font-bold">
+                            {post.comments?.length || 0}
+                          </span>
                         </button>
 
                         <button className="flex items-center space-x-2 text-slate-500 hover:text-green-600 transition-colors group">
-                          <Share2 size={22} className="group-hover:scale-110 transition-transform" />
+                          <Share2
+                            size={22}
+                            className="group-hover:scale-110 transition-transform"
+                          />
                         </button>
                       </div>
                     </div>
@@ -607,7 +688,10 @@ const CommunityPage = () => {
                                 className="flex space-x-3"
                               >
                                 <img
-                                  src={comment.user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                                  src={
+                                    comment.user?.avatar ||
+                                    "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                                  }
                                   alt={comment.user?.name}
                                   className="w-10 h-10 rounded-full border-2 border-white shadow-md object-cover"
                                 />
@@ -615,7 +699,7 @@ const CommunityPage = () => {
                                   <p className="font-bold text-sm text-slate-900 mb-1">
                                     {comment.user?.name}
                                   </p>
-                                  <p className="text-slate-700 text-sm leading-relaxed">
+                                  <p className="text-slate-700 text-sm leading-relaxed break-words">
                                     {comment.content}
                                   </p>
                                 </div>
@@ -624,18 +708,24 @@ const CommunityPage = () => {
 
                             <div className="flex items-center space-x-3 mt-6 pt-4 border-t border-slate-200">
                               <img
-                                src={user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                                src={
+                                  user?.avatar ||
+                                  "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                                }
                                 alt={user?.name}
                                 className="w-10 h-10 rounded-full border-2 border-purple-200 object-cover"
                               />
                               <input
                                 type="text"
                                 value={commentContent}
-                                onChange={(e) => setCommentContent(e.target.value)}
+                                onChange={(e) =>
+                                  setCommentContent(e.target.value)
+                                }
                                 placeholder="Write a thoughtful comment..."
                                 className="flex-1 px-4 py-3 bg-white border-2 border-slate-200 text-slate-700 rounded-full focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all outline-none text-sm"
                                 onKeyDown={(e) => {
-                                  if (e.key === "Enter") handleComment(post._id);
+                                  if (e.key === "Enter")
+                                    handleComment(post._id);
                                 }}
                               />
                               <button
@@ -663,8 +753,12 @@ const CommunityPage = () => {
                   <div className="w-24 h-24 mx-auto mb-6 bg-slate-100 rounded-full flex items-center justify-center">
                     <MessageSquare className="w-12 h-12 text-slate-400" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">No posts found</h3>
-                  <p className="text-slate-600">Try adjusting your filters or search query</p>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">
+                    No posts found
+                  </h3>
+                  <p className="text-slate-600">
+                    Try adjusting your filters or search query
+                  </p>
                 </motion.div>
               )}
             </div>
