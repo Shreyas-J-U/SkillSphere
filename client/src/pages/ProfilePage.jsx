@@ -323,7 +323,7 @@ const ProfilePage = () => {
                 value={newSkill}
                 onChange={(e) => setNewSkill(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleAddSkill()}
-                className="flex-1 px-3 py-2 sm:px-4 sm:py-3 bg-white border-2 border-gray-300 rounded-xl focus:border-blue-500"
+                className="flex-1 px-3 py-2 sm:px-4 sm:py-3 bg-white border-2 border-gray-300 rounded-xl focus:border-blue-500 text-gray-700"
                 placeholder="e.g., Python, Cooking..."
               />
 
