@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
 
   // Sync Clerk user with our own MongoDB user record
   useEffect(() => {
-    console.log("AuthContext: Effect triggered", { isClerkLoaded, isSignedIn });
+    // console.log("AuthContext: Effect triggered", { isClerkLoaded, isSignedIn });
 
     const syncUser = async () => {
       if (!isClerkLoaded) return;
