@@ -134,7 +134,17 @@ const DashboardPage = () => {
         sent: [request, ...prev.sent],
       }));
 
-      toast.success(`Barter request sent to ${selectedUser.name}!`);
+      if (request.emailStatus && !request.emailStatus.sent) {
+        toast.error(
+          `Request sent, but email failed: ${request.emailStatus.error}`,
+          {
+            duration: 6000,
+            icon: "⚠️",
+          }
+        );
+      } else {
+        toast.success(`Barter request sent to ${selectedUser.name}!`);
+      }
 
       setShowRequestModal(false);
       setRequestMessage("");
