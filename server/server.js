@@ -23,7 +23,9 @@ if (process.env.NODE_ENV !== "production") {
     console.error("⚠️ dotenv import error:", err);
   }
 } else {
-  console.log("🚀 Production mode — skipping .env load (using system ENV variables)");
+  console.log(
+    "🚀 Production mode — skipping .env load (using system ENV variables)"
+  );
 }
 
 import express from "express";
@@ -112,6 +114,7 @@ server.listen(PORT, () => {
 ║                                           ║
 ║   📡 Port: ${PORT}                        ║
 ║   🌍 Environment: ${process.env.NODE_ENV || "development"}           ║
+║   🔗 Client URL: ${process.env.CLIENT_URL || "Not Set"}              ║
 ║   🔗 API: http://localhost:${PORT}/api    ║
 ║                                           ║
 ╚═══════════════════════════════════════════╝
