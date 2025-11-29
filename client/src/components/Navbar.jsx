@@ -46,7 +46,7 @@ const Navbar = ({ onHistoryClick }) => {
 
           {/* Mobile Hamburger */}
           <button
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-700"
             onClick={() => setShowMobileMenu(!showMobileMenu)}
           >
             {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
@@ -145,69 +145,68 @@ const Navbar = ({ onHistoryClick }) => {
         </div>
 
         {/* Mobile Menu */}
-{showMobileMenu && (
-  <motion.div
-    initial={{ opacity: 0, y: -10 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="md:hidden mt-4 flex flex-col space-y-2 bg-gray-100 shadow-lg rounded-xl p-4 text-gray-700 border border-gray-200"
-  >
-    <Link
-      to="/dashboard"
-      onClick={() => setShowMobileMenu(false)}
-      className="hover:bg-white px-2 py-1 rounded"
-    >
-      <Home size={20} className="inline-block mr-2" /> Dashboard
-    </Link>
-    <Link
-      to="/activity"
-      onClick={() => setShowMobileMenu(false)}
-      className="hover:bg-white px-2 py-1 rounded"
-    >
-      <Activity size={20} className="inline-block mr-2" /> Activity
-    </Link>
-    <Link
-      to="/jobs"
-      onClick={() => setShowMobileMenu(false)}
-      className="hover:bg-white px-2 py-1 rounded"
-    >
-      <Briefcase size={20} className="inline-block mr-2" /> Jobs
-    </Link>
-    <Link
-      to="/community"
-      onClick={() => setShowMobileMenu(false)}
-      className="hover:bg-white px-2 py-1 rounded"
-    >
-      <Users size={20} className="inline-block mr-2" /> Community
-    </Link>
-    <Link
-      to="/profile"
-      onClick={() => setShowMobileMenu(false)}
-      className="hover:bg-white px-2 py-1 rounded"
-    >
-      <User size={20} className="inline-block mr-2" /> Profile
-    </Link>
+        {showMobileMenu && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="md:hidden mt-4 flex flex-col space-y-2 bg-gray-100 shadow-lg rounded-xl p-4 text-gray-700 border border-gray-200"
+          >
+            <Link
+              to="/dashboard"
+              onClick={() => setShowMobileMenu(false)}
+              className="hover:bg-white px-2 py-1 rounded"
+            >
+              <Home size={20} className="inline-block mr-2" /> Dashboard
+            </Link>
+            <Link
+              to="/activity"
+              onClick={() => setShowMobileMenu(false)}
+              className="hover:bg-white px-2 py-1 rounded"
+            >
+              <Activity size={20} className="inline-block mr-2" /> Activity
+            </Link>
+            <Link
+              to="/jobs"
+              onClick={() => setShowMobileMenu(false)}
+              className="hover:bg-white px-2 py-1 rounded"
+            >
+              <Briefcase size={20} className="inline-block mr-2" /> Jobs
+            </Link>
+            <Link
+              to="/community"
+              onClick={() => setShowMobileMenu(false)}
+              className="hover:bg-white px-2 py-1 rounded"
+            >
+              <Users size={20} className="inline-block mr-2" /> Community
+            </Link>
+            <Link
+              to="/profile"
+              onClick={() => setShowMobileMenu(false)}
+              className="hover:bg-white px-2 py-1 rounded"
+            >
+              <User size={20} className="inline-block mr-2" /> Profile
+            </Link>
 
-    {onHistoryClick && (
-      <button
-        onClick={() => {
-          setShowMobileMenu(false);
-          onHistoryClick();
-        }}
-        className="hover:bg-white px-2 py-1 rounded text-left"
-      >
-        <History size={20} className="inline-block mr-2" /> History
-      </button>
-    )}
+            {onHistoryClick && (
+              <button
+                onClick={() => {
+                  setShowMobileMenu(false);
+                  onHistoryClick();
+                }}
+                className="hover:bg-white px-2 py-1 rounded text-left"
+              >
+                <History size={20} className="inline-block mr-2" /> History
+              </button>
+            )}
 
-    <button
-      onClick={handleLogout}
-      className="text-red-600 hover:bg-red-50 px-2 py-1 rounded flex items-center mt-2"
-    >
-      <LogOut size={20} className="inline-block mr-2" /> Logout
-    </button>
-  </motion.div>
-)}
-
+            <button
+              onClick={handleLogout}
+              className="text-red-600 hover:bg-red-50 px-2 py-1 rounded flex items-center mt-2"
+            >
+              <LogOut size={20} className="inline-block mr-2" /> Logout
+            </button>
+          </motion.div>
+        )}
       </div>
     </motion.nav>
   );
