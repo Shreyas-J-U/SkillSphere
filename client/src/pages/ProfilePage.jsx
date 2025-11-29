@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Edit2, Save, X, Plus, Upload } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Edit2, Save, X, Plus, Upload, ChevronDown } from "lucide-react";
 import Navbar from "../components/Navbar";
 import SkillTag from "../components/SkillTag";
 import BarterHistoryModal from "../components/BarterHistoryModal";
@@ -10,6 +10,63 @@ import { uploadFile } from "../api/uploadApi";
 
 // ⭐ Only addition
 import toast from "react-hot-toast";
+
+const CustomDropdown = ({ value, onChange, options }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative min-w-[180px]">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-gray-900 focus:border-blue-500 flex items-center justify-between transition-colors"
+      >
+        <span className="font-medium">
+          {options.find((opt) => opt.value === value)?.label}
+        </span>
+        <ChevronDown
+          size={18}
+          className={`transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-10"
+              onClick={() => setIsOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-100 rounded-xl shadow-xl overflow-hidden z-20"
+            >
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center justify-between ${
+                    value === option.value
+                      ? "bg-blue-50 text-blue-600 font-semibold"
+                      : "text-gray-700"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
@@ -205,7 +262,7 @@ const ProfilePage = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className="w-full px-4 py-2 sm:py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-100"
+                      className="w-full text-gray-700 px-4 py-2 sm:py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-100"
                     />
                   </div>
 
@@ -218,7 +275,7 @@ const ProfilePage = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, bio: e.target.value })
                       }
-                      className="w-full px-4 py-2 sm:py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-100 min-h-[80px] sm:min-h-[100px]"
+                      className="w-full text-gray-700 px-4 py-2 sm:py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-100 min-h-[80px] sm:min-h-[100px]"
                       placeholder="Tell us about yourself..."
                     />
                   </div>
@@ -252,14 +309,14 @@ const ProfilePage = () => {
           {/* Skill Add Panel */}
           <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-4 sm:p-5 rounded-xl border border-gray-200 mb-4">
             <div className="flex flex-col sm:flex-row gap-2">
-              <select
+              <CustomDropdown
                 value={skillType}
-                onChange={(e) => setSkillType(e.target.value)}
-                className="px-3 py-2 sm:px-4 sm:py-3 bg-white border-2 border-gray-300 rounded-xl text-gray-900 focus:border-blue-500"
-              >
-                <option value="offered">Skills I Offer</option>
-                <option value="wanted">Skills I Want</option>
-              </select>
+                onChange={setSkillType}
+                options={[
+                  { value: "offered", label: "Skills I Offer" },
+                  { value: "wanted", label: "Skills I Want" },
+                ]}
+              />
 
               <input
                 type="text"
@@ -276,7 +333,7 @@ const ProfilePage = () => {
                 whileTap={{ scale: 0.95 }}
                 className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl"
               >
-                <Plus size={18} />
+               + Add the skill
               </motion.button>
             </div>
           </div>
