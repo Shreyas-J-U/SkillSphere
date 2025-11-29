@@ -40,7 +40,7 @@ const DashboardPage = () => {
   });
   const [showHistory, setShowHistory] = useState(false);
   const { user } = useAuth();
-  const { socket } = useSocket();
+  const { socket, onlineUsers } = useSocket();
 
   useEffect(() => {
     fetchData();
@@ -384,6 +384,7 @@ const DashboardPage = () => {
                           key={u._id}
                           user={u}
                           onSendRequest={handleSendRequest}
+                          isOnline={socket && onlineUsers.includes(u._id)}
                         />
                       ))}
                       {users.length === 0 && (
