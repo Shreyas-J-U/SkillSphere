@@ -27,14 +27,21 @@ export const AuthProvider = ({ children }) => {
 
   // Sync Clerk user with our own MongoDB user record
   useEffect(() => {
-    // Whenever Clerk state changes, we start in a loading state
-    setLoading(true);
+    console.log("AuthContext: Effect triggered", { isClerkLoaded, isSignedIn });
+
     const syncUser = async () => {
-      if (isClerkLoaded && isSignedIn) {
+      if (!isClerkLoaded) return;
+
+      if (isSignedIn) {
+        // Only set loading if we don't have a user yet, to prevent flicker on nav
+        if (!user) setLoading(true);
+
         try {
           const token = await getToken();
+          // console.log("AuthContext: Got token");
           api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
           const { data } = await api.get("/auth/me");
+          // console.log("AuthContext: User synced", data);
           setUser(data);
         } catch (err) {
           console.error("Error syncing user:", err);
@@ -42,14 +49,17 @@ export const AuthProvider = ({ children }) => {
         } finally {
           setLoading(false);
         }
-      } else if (isClerkLoaded && !isSignedIn) {
+      } else {
+        // Not signed in
         setUser(null);
         delete api.defaults.headers.common["Authorization"];
         setLoading(false);
       }
     };
+
     syncUser();
-  }, [isClerkLoaded, isSignedIn, getToken]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isClerkLoaded, isSignedIn]); // Removed getToken to prevent loops if it's unstable
 
   // Helper functions for UI components
   const login = () => clerk.openSignIn();
