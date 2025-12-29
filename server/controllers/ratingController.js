@@ -1,6 +1,6 @@
-import Rating from '../models/Rating.js';
-import BarterRequest from '../models/BarterRequest.js';
-import User from '../models/User.js';
+import Rating from "../models/Rating.js";
+import BarterRequest from "../models/BarterRequest.js";
+import User from "../models/User.js";
 
 // @desc    Submit rating for a completed barter
 // @route   POST /api/ratings
@@ -11,45 +11,54 @@ export const submitRating = async (req, res) => {
 
     // Validate rating
     if (!rating || rating < 1 || rating > 5) {
-      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+      return res
+        .status(400)
+        .json({ message: "Rating must be between 1 and 5" });
     }
 
     // Check if barter request exists and is completed
     const barterRequest = await BarterRequest.findById(barterRequestId);
     if (!barterRequest) {
-      return res.status(404).json({ message: 'Barter request not found' });
+      return res.status(404).json({ message: "Barter request not found" });
     }
 
-    if (barterRequest.status !== 'completed') {
-      return res.status(400).json({ message: 'Can only rate completed barters' });
+    if (barterRequest.status !== "completed") {
+      return res
+        .status(400)
+        .json({ message: "Can only rate completed barters" });
     }
 
     // Verify user is part of this barter
-    const isParticipant = 
+    const isParticipant =
       barterRequest.sender.toString() === req.user._id.toString() ||
       barterRequest.receiver.toString() === req.user._id.toString();
 
     if (!isParticipant) {
-      return res.status(403).json({ message: 'Not authorized to rate this barter' });
+      return res
+        .status(403)
+        .json({ message: "Not authorized to rate this barter" });
     }
 
     // Verify ratee is the other participant
-    const otherParticipant = barterRequest.sender.toString() === req.user._id.toString()
-      ? barterRequest.receiver.toString()
-      : barterRequest.sender.toString();
+    const otherParticipant =
+      barterRequest.sender.toString() === req.user._id.toString()
+        ? barterRequest.receiver.toString()
+        : barterRequest.sender.toString();
 
     if (otherParticipant !== rateeId) {
-      return res.status(400).json({ message: 'Invalid ratee' });
+      return res.status(400).json({ message: "Invalid ratee" });
     }
 
     // Check if rating already exists
     const existingRating = await Rating.findOne({
       barterRequest: barterRequestId,
-      rater: req.user._id
+      rater: req.user._id,
     });
 
     if (existingRating) {
-      return res.status(400).json({ message: 'You have already rated this barter' });
+      return res
+        .status(400)
+        .json({ message: "You have already rated this barter" });
     }
 
     // Create rating
@@ -59,20 +68,20 @@ export const submitRating = async (req, res) => {
       ratee: rateeId,
       rating,
       review,
-      categories: categories || {}
+      categories: categories || {},
     });
 
     // Update ratee's rating statistics
     await updateUserRatingStats(rateeId);
 
     const populatedRating = await Rating.findById(newRating._id)
-      .populate('rater', 'name avatar')
-      .populate('ratee', 'name avatar');
+      .populate("rater", "name avatar")
+      .populate("ratee", "name avatar");
 
     res.status(201).json(populatedRating);
   } catch (error) {
-    console.error('Submit rating error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Submit rating error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -84,25 +93,29 @@ export const getUserRatings = async (req, res) => {
     const { userId } = req.params;
     const { page = 1, limit = 10 } = req.query;
 
+    // Cap limit to prevent DoS attacks
+    const maxLimit = Math.min(parseInt(limit) || 10, 100);
+    const currentPage = Math.max(parseInt(page) || 1, 1);
+
     const ratings = await Rating.find({ ratee: userId })
-      .populate('rater', 'name avatar')
-      .populate('barterRequest', 'skillOffered skillRequested')
+      .populate("rater", "name avatar")
+      .populate("barterRequest", "skillOffered skillRequested")
       .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(maxLimit)
+      .skip((currentPage - 1) * maxLimit)
       .lean();
 
     const total = await Rating.countDocuments({ ratee: userId });
 
     res.json({
       ratings,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
-      total
+      totalPages: Math.ceil(total / maxLimit),
+      currentPage,
+      total,
     });
   } catch (error) {
-    console.error('Get user ratings error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Get user ratings error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -114,13 +127,13 @@ export const getBarterRatings = async (req, res) => {
     const { barterRequestId } = req.params;
 
     const ratings = await Rating.find({ barterRequest: barterRequestId })
-      .populate('rater', 'name avatar')
-      .populate('ratee', 'name avatar');
+      .populate("rater", "name avatar")
+      .populate("ratee", "name avatar");
 
     res.json(ratings);
   } catch (error) {
-    console.error('Get barter ratings error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Get barter ratings error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -133,51 +146,58 @@ export const canRateBarter = async (req, res) => {
 
     const barterRequest = await BarterRequest.findById(barterRequestId);
     if (!barterRequest) {
-      return res.status(404).json({ message: 'Barter request not found' });
+      return res.status(404).json({ message: "Barter request not found" });
     }
 
     // Check if completed
-    if (barterRequest.status !== 'completed') {
-      return res.json({ canRate: false, reason: 'Barter not completed' });
+    if (barterRequest.status !== "completed") {
+      return res.json({ canRate: false, reason: "Barter not completed" });
     }
 
     // Check if user is participant
-    const isParticipant = 
+    const isParticipant =
       barterRequest.sender.toString() === req.user._id.toString() ||
       barterRequest.receiver.toString() === req.user._id.toString();
 
     if (!isParticipant) {
-      return res.json({ canRate: false, reason: 'Not a participant' });
+      return res.json({ canRate: false, reason: "Not a participant" });
     }
 
     // Check if already rated
     const existingRating = await Rating.findOne({
       barterRequest: barterRequestId,
-      rater: req.user._id
+      rater: req.user._id,
     });
 
     if (existingRating) {
-      return res.json({ canRate: false, reason: 'Already rated', rating: existingRating });
+      return res.json({
+        canRate: false,
+        reason: "Already rated",
+        rating: existingRating,
+      });
     }
 
     // Get the other participant
-    const otherParticipantId = barterRequest.sender.toString() === req.user._id.toString()
-      ? barterRequest.receiver
-      : barterRequest.sender;
+    const otherParticipantId =
+      barterRequest.sender.toString() === req.user._id.toString()
+        ? barterRequest.receiver
+        : barterRequest.sender;
 
-    const otherParticipant = await User.findById(otherParticipantId).select('name avatar');
+    const otherParticipant = await User.findById(otherParticipantId).select(
+      "name avatar"
+    );
 
-    res.json({ 
-      canRate: true, 
+    res.json({
+      canRate: true,
       otherParticipant: {
         _id: otherParticipantId,
         name: otherParticipant.name,
-        avatar: otherParticipant.avatar
-      }
+        avatar: otherParticipant.avatar,
+      },
     });
   } catch (error) {
-    console.error('Can rate barter error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Can rate barter error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -190,27 +210,27 @@ async function updateUserRatingStats(userId) {
       return;
     }
 
-    // Calculate average rating
+    // Calculate average rating (defensive programming)
     const totalRating = ratings.reduce((sum, r) => sum + r.rating, 0);
-    const averageRating = totalRating / ratings.length;
+    const averageRating = ratings.length > 0 ? totalRating / ratings.length : 0;
 
     // Calculate category averages
     const categoryTotals = {
       communication: 0,
       skillQuality: 0,
       punctuality: 0,
-      professionalism: 0
+      professionalism: 0,
     };
     const categoryCounts = {
       communication: 0,
       skillQuality: 0,
       punctuality: 0,
-      professionalism: 0
+      professionalism: 0,
     };
 
-    ratings.forEach(rating => {
+    ratings.forEach((rating) => {
       if (rating.categories) {
-        Object.keys(categoryTotals).forEach(category => {
+        Object.keys(categoryTotals).forEach((category) => {
           if (rating.categories[category]) {
             categoryTotals[category] += rating.categories[category];
             categoryCounts[category]++;
@@ -220,19 +240,20 @@ async function updateUserRatingStats(userId) {
     });
 
     const ratingBreakdown = {};
-    Object.keys(categoryTotals).forEach(category => {
-      ratingBreakdown[category] = categoryCounts[category] > 0
-        ? categoryTotals[category] / categoryCounts[category]
-        : 0;
+    Object.keys(categoryTotals).forEach((category) => {
+      ratingBreakdown[category] =
+        categoryCounts[category] > 0
+          ? categoryTotals[category] / categoryCounts[category]
+          : 0;
     });
 
     // Update user
     await User.findByIdAndUpdate(userId, {
       averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
       totalRatings: ratings.length,
-      ratingBreakdown
+      ratingBreakdown,
     });
   } catch (error) {
-    console.error('Update user rating stats error:', error);
+    console.error("Update user rating stats error:", error);
   }
 }
