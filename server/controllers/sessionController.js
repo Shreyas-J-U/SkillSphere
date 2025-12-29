@@ -176,7 +176,7 @@ export const endMeetingInstance = async (req, res) => {
       return res.status(404).json({ message: "Session not found" });
     }
 
-    // Check if user is participant
+    // Check if user is participant (use non-populated reference)
     const isParticipant = session.participants.some(
       (p) => p.user.toString() === req.user._id.toString()
     );
@@ -276,7 +276,7 @@ export const completeSession = async (req, res) => {
       return res.status(404).json({ message: "Session not found" });
     }
 
-    // Check if user is participant
+    // Check if user is participant (use non-populated reference)
     const isParticipant = session.participants.some(
       (p) => p.user.toString() === req.user._id.toString()
     );
