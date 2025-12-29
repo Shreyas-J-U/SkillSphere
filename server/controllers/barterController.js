@@ -47,21 +47,28 @@ export const createBarterRequest = async (req, res) => {
       .populate("sender", "name email avatar skillsOffered")
       .populate("receiver", "name email avatar skillsWanted");
 
-    // Send email notification
-    const emailResult = await sendBarterRequestEmail(
-      receiver.email,
-      req.user.name,
-      skillOffered,
-      skillRequested
-    );
-
-    let emailStatus = { sent: true };
-    if (emailResult && !emailResult.success) {
-      console.warn(
-        "⚠️ Barter request created but email notification failed:",
-        emailResult.error
+    // Send email notification (don't let email failure break the request)
+    let emailStatus = { sent: false };
+    try {
+      const emailResult = await sendBarterRequestEmail(
+        receiver.email,
+        req.user.name,
+        skillOffered,
+        skillRequested
       );
-      emailStatus = { sent: false, error: emailResult.error };
+
+      if (emailResult && emailResult.success) {
+        emailStatus = { sent: true };
+      } else {
+        console.warn(
+          "⚠️ Barter request created but email notification failed:",
+          emailResult?.error
+        );
+        emailStatus = { sent: false, error: emailResult?.error };
+      }
+    } catch (emailError) {
+      console.error("❌ Email service error:", emailError.message);
+      emailStatus = { sent: false, error: emailError.message };
     }
 
     res.status(201).json({ ...populatedRequest.toObject(), emailStatus });
@@ -195,15 +202,19 @@ export const acceptBarterRequest = async (req, res) => {
       .populate("sender", "name email avatar skillsOffered")
       .populate("receiver", "name email avatar skillsWanted");
 
-    // Send email to sender
-    const sender = await User.findById(request.sender);
-    await sendStatusUpdateEmail(
-      sender.email,
-      sender.name,
-      "accepted",
-      populatedRequest.skillOffered,
-      populatedRequest.skillRequested
-    );
+    // Send email to sender (don't let email failure break the operation)
+    try {
+      const sender = await User.findById(request.sender);
+      await sendStatusUpdateEmail(
+        sender.email,
+        sender.name,
+        "accepted",
+        populatedRequest.skillOffered,
+        populatedRequest.skillRequested
+      );
+    } catch (emailError) {
+      console.error("❌ Failed to send acceptance email:", emailError.message);
+    }
 
     res.json({ request: populatedRequest, chat });
   } catch (error) {
@@ -241,15 +252,19 @@ export const rejectBarterRequest = async (req, res) => {
       .populate("sender", "name email avatar skillsOffered")
       .populate("receiver", "name email avatar skillsWanted");
 
-    // Send email to sender
-    const sender = await User.findById(request.sender);
-    await sendStatusUpdateEmail(
-      sender.email,
-      sender.name,
-      "rejected",
-      populatedRequest.skillOffered,
-      populatedRequest.skillRequested
-    );
+    // Send email to sender (don't let email failure break the operation)
+    try {
+      const sender = await User.findById(request.sender);
+      await sendStatusUpdateEmail(
+        sender.email,
+        sender.name,
+        "rejected",
+        populatedRequest.skillOffered,
+        populatedRequest.skillRequested
+      );
+    } catch (emailError) {
+      console.error("❌ Failed to send rejection email:", emailError.message);
+    }
 
     res.json(populatedRequest);
   } catch (error) {
