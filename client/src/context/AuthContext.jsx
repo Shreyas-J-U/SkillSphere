@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useUser, useAuth as useClerkAuth, useClerk } from "@clerk/clerk-react";
 import api from "../utils/api";
+import toast from "react-hot-toast";
 
 // Create a context that will hold authentication state for the whole app
 const AuthContext = createContext();
@@ -51,7 +52,7 @@ export const AuthProvider = ({ children }) => {
 
   // Sync Clerk user with our own MongoDB user record
   useEffect(() => {
-    // console.log("AuthContext: Effect triggered", { isClerkLoaded, isSignedIn });
+    let isCancelled = false;
 
     const syncUser = async () => {
       if (!isClerkLoaded) return;
@@ -63,30 +64,56 @@ export const AuthProvider = ({ children }) => {
         try {
           // Token is injected by interceptor
           const { data } = await api.get("/auth/me");
-          // console.log("AuthContext: User synced", data);
-          setUser(data);
+
+          if (!isCancelled) {
+            setUser(data);
+          }
         } catch (err) {
-          console.error("Error syncing user:", err);
-          setUser(null);
+          if (!isCancelled) {
+            console.error("Error syncing user:", err);
+
+            // Only show error toast if it's not a 401 (handled by api interceptor)
+            if (err.response?.status !== 401) {
+              toast.error("Failed to sync user data. Please refresh the page.");
+            }
+
+            setUser(null);
+          }
         } finally {
-          setLoading(false);
+          if (!isCancelled) {
+            setLoading(false);
+          }
         }
       } else {
         // Not signed in
-        setUser(null);
-        delete api.defaults.headers.common["Authorization"];
-        setLoading(false);
+        if (!isCancelled) {
+          setUser(null);
+          delete api.defaults.headers.common["Authorization"];
+          setLoading(false);
+        }
       }
     };
 
     syncUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isClerkLoaded, isSignedIn]); // Removed getToken to prevent loops if it's unstable
+
+    // Cleanup function to cancel async operations
+    return () => {
+      isCancelled = true;
+    };
+  }, [isClerkLoaded, isSignedIn]);
 
   // Helper functions for UI components
   const login = () => clerk.openSignIn();
   const register = () => clerk.openSignUp();
-  const logout = () => signOut();
+  const logout = async () => {
+    try {
+      await signOut();
+      toast.success("Logged out successfully");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Failed to logout");
+    }
+  };
 
   // Expose everything the rest of the app needs
   return (
