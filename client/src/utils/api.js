@@ -1,4 +1,5 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const api = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`,
@@ -22,11 +23,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      // Don't reload page automatically - let the UI handle the auth state change
-      // window.location.href = "/login";
+      // Token expired or invalid - Clerk will handle the redirect
+      toast.error("Session expired. Please sign in again.");
+    } else if (error.response?.status === 403) {
+      toast.error("You don't have permission to perform this action.");
+    } else if (error.response?.status >= 500) {
+      toast.error("Server error. Please try again later.");
     }
     return Promise.reject(error);
   }
