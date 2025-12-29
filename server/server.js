@@ -31,6 +31,7 @@ if (process.env.NODE_ENV !== "production") {
 import express from "express";
 import { createServer } from "http";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import connectDB from "./config/db.js";
 import { initializeSocket } from "./socket.js";
 
@@ -49,6 +50,9 @@ import communityRoutes from "./routes/communityRoutes.js";
 const app = express();
 const server = createServer(app);
 
+// Trust proxy (required for rate limiting behind load balancers/proxies like Vercel/Heroku)
+app.set("trust proxy", 1);
+
 // Connect to MongoDB
 connectDB();
 
@@ -57,6 +61,24 @@ const io = initializeSocket(server);
 
 // Make io accessible to routes
 app.set("io", io);
+
+// Rate limiting configuration
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Stricter rate limiting for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // Limit each IP to 20 requests per windowMs
+  message: "Too many authentication attempts, please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Middleware
 app.use(
@@ -69,8 +91,20 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use("/api/auth", authRoutes);
+// Health check route (Place BEFORE rate limiters to avoid blocking monitoring)
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "OK",
+    message: "SkillSphere API is running",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Apply rate limiting to all API routes
+app.use("/api/", limiter);
+
+// Routes with specific rate limiting
+app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/barters", barterRoutes);
 app.use("/api/chats", chatRoutes);
@@ -79,15 +113,6 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/community", communityRoutes);
-
-// Health check route
-app.get("/api/health", (req, res) => {
-  res.json({
-    status: "OK",
-    message: "SkillSphere API is running",
-    timestamp: new Date().toISOString(),
-  });
-});
 
 // 404 handler
 app.use((req, res) => {
