@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext";
+import toast from "react-hot-toast";
 
 const SocketContext = createContext();
 
@@ -19,6 +20,9 @@ export const SocketProvider = ({ children }) => {
   const { getToken, isAuthenticated } = useAuth();
 
   useEffect(() => {
+    let currentSocket = null;
+    let hasShownConnectionToast = false;
+
     const initSocket = async () => {
       if (isAuthenticated) {
         try {
@@ -30,16 +34,27 @@ export const SocketProvider = ({ children }) => {
             import.meta.env.VITE_API_URL || "http://localhost:5000",
             {
               auth: { token },
+              reconnection: true,
+              reconnectionDelay: 1000,
+              reconnectionAttempts: 5,
             }
           );
 
+          currentSocket = newSocket;
+
           newSocket.on("connect", () => {
-            // console.log("Socket connected");
+            console.log("✅ Socket connected");
             setConnected(true);
+
+            // Only show reconnection toast, not initial connection
+            if (hasShownConnectionToast) {
+              toast.success("Reconnected to server");
+            }
+            hasShownConnectionToast = true;
           });
 
           newSocket.on("disconnect", () => {
-            // console.log("Socket disconnected");
+            console.log("❌ Socket disconnected");
             setConnected(false);
           });
 
@@ -57,15 +72,19 @@ export const SocketProvider = ({ children }) => {
 
           newSocket.on("connect_error", (error) => {
             console.error("Socket connection error:", error);
+            toast.error("Connection issue. Retrying...");
           });
 
           setSocket(newSocket);
         } catch (error) {
           console.error("Error getting token for socket:", error);
+          toast.error("Failed to establish real-time connection");
         }
       } else {
-        if (socket) {
-          socket.close();
+        // User logged out - clean up socket
+        if (currentSocket) {
+          currentSocket.close();
+          currentSocket = null;
           setSocket(null);
           setConnected(false);
           setOnlineUsers([]);
@@ -75,9 +94,11 @@ export const SocketProvider = ({ children }) => {
 
     initSocket();
 
+    // Cleanup function with local socket reference
     return () => {
-      if (socket) {
-        socket.close();
+      if (currentSocket) {
+        currentSocket.close();
+        currentSocket = null;
       }
     };
   }, [isAuthenticated, getToken]);
