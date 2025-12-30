@@ -807,7 +807,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Small feature cards */}
+            {/* Small feature cards with icons and descriptions*/}
             <div className="feature-card bg-white p-8 rounded-3xl shadow-xl border-2 border-slate-100 hover:shadow-2xl hover:border-purple-200 transition-all duration-500 group">
               <div
                 className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${COLORS.gradientPrimary} flex items-center justify-center mb-6 shadow-lg transform group-hover:scale-110 transition-transform`}
