@@ -59,8 +59,10 @@ const TYPING_SKILLS = [
   "UI/UX Design",
   "Guitar",
   "Data Structures",
-  "Public Speaking",
+  "Generative AI",
   "Machine Learning",
+  "Web Design",
+  "AI for Development"
 ];
 
 const Button = ({ children, className = "", variant = "primary", onClick }) => {
@@ -779,7 +781,7 @@ export default function LandingPage() {
                   <Cpu className="text-white w-10 h-10" />
                 </div>
                 <h3 className="text-4xl font-bold text-slate-900 mb-4">
-                  AI Skill Matching & Job Recommender
+                  Skill Matching & Job Recommender
                 </h3>
                 <p className="text-lg text-slate-600 leading-relaxed mb-6">
                   Our engine understands what you{" "}
