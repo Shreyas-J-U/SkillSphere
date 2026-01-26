@@ -5,6 +5,8 @@
 
 **SkillSphere** connects people who want to learn with people who love to teach. It's a community-driven platform where your skills are your currency. Whether you're a developer wanting to learn Spanish or a designer looking to master Python, SkillSphere helps you find the perfect partner. With built-in video scheduling, chat, and a trusted rating system, exchanging knowledge has never been easier or more secure
 
+**Project Live Link** - https://skillsphere-7rmj.onrender.com/
+
 # Landing Page
 <img width="1705" height="902" alt="image" src="https://github.com/user-attachments/assets/5f6251f8-d732-4776-9e4d-e97f418370e3" />
 
