@@ -7,14 +7,19 @@
 
 # Landing Page
 <img width="1705" height="902" alt="image" src="https://github.com/user-attachments/assets/5f6251f8-d732-4776-9e4d-e97f418370e3" />
+
 # Clerk Authentication
 <img width="988" height="898" alt="image" src="https://github.com/user-attachments/assets/b33396d5-419c-4d9b-b52b-8845aadb925f" />
+
 # Dashboard
 <img width="1918" height="897" alt="image" src="https://github.com/user-attachments/assets/df68754d-82f1-4029-9cb5-54f6149bf862" />
+
 # Request A Skill
 <img width="1912" height="906" alt="image" src="https://github.com/user-attachments/assets/c26f30b0-00e8-4289-96e4-66235fdae002" />
+
 # Job Referral Page
 <img width="1893" height="902" alt="image" src="https://github.com/user-attachments/assets/4bde0339-af1d-4f92-9bf6-bbe640f6886f" />
+
 # Community Page
 <img width="1858" height="910" alt="image" src="https://github.com/user-attachments/assets/dfc110ef-a7c3-4099-9dd5-7e43e430a546" />
 
