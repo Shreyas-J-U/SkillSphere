@@ -1,7 +1,6 @@
-# 🌟 SkillSphere - Peer-to-Peer Skill Bartering Platform
+#  SkillSphere - Peer-to-Peer Skill Bartering Platform
 
 ![SkillSphere](https://img.shields.io/badge/SkillSphere-v1.0.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
 
 **SkillSphere** connects people who want to learn with people who love to teach. It's a community-driven platform where your skills are your currency. Whether you're a developer wanting to learn Spanish or a designer looking to master Python, SkillSphere helps you find the perfect partner. With built-in video scheduling, chat, and a trusted rating system, exchanging knowledge has never been easier or more secure
 
@@ -26,65 +25,57 @@
 <img width="1858" height="910" alt="image" src="https://github.com/user-attachments/assets/dfc110ef-a7c3-4099-9dd5-7e43e430a546" />
 
 
-## ✨ Features
+##  Features
 
-### 🔐 **Authentication & Security**
+###  **Authentication & Security**
 - JWT-based authentication
 - Protected routes
 - Secure password hashing with bcrypt
 - Auto-logout on token expiration
 
-### 👤 **Profile Management**
+###  **Profile Management**
 - Customizable user profiles
 - Bio editing
 - Avatar upload (Cloudinary)
 - Add/remove skills offered and wanted
 
-### 🔄 **Barter Request System**
+###  **Barter Request System**
 - Send skill exchange requests
 - Accept/reject incoming requests
 - Track request status (Pending, Accepted, Completed, Rejected)
 - Email notifications for requests
 
-### ⭐ **Rating & Reputation System**
+###  **Rating & Reputation System**
 - Rate users after completed barters
 - 5-star rating system with categories (Communication, Expertise, Punctuality)
 - Write detailed reviews
 - View user reputation on profile cards
 - "Rated" badges for completed interactions
 
-### 🔍 **Dynamic Discovery**
+###  **Dynamic Discovery**
 - Real-time search with debouncing
 - Search by name, email, or skills (offered/wanted)
 - Smart filtering
 - Instant results as you type
 
-### 💬 **Real-Time Chat**
+###  **Real-Time Chat**
 - Socket.IO powered messaging
 - Text and media support
 - Typing indicators
 - Message history
 
-### 🎥 **Session Management**
+###  **Session Management**
 - Google Meet integration
 - Ready status tracking
 - Session scheduling
 - Both participants must be ready to join
 
-### 🗂 **Barter History**
+###  **Barter History**
 - View all past and current barters
 - Filter by status
 - Beautiful modal interface
 
-### 🎨 **Modern UI/UX**
-- Glassmorphism design
-- Framer Motion animations
-- GSAP scroll effects
-- Tailwind CSS styling
-- Responsive design
-- Dark theme with gradients
-
-## 🛠 Tech Stack
+##  Tech Stack
 
 ### **Frontend**
 - React 18
@@ -105,7 +96,7 @@
 - Cloudinary (media uploads)
 - Nodemailer (email notifications)
 
-## 📦 Installation
+##  Installation
 
 ### Prerequisites
 - Node.js (v16 or higher)
@@ -155,7 +146,7 @@ Edit `client/.env`:
 VITE_API_URL=http://localhost:5000
 ```
 
-## 🚀 Running the Application
+##  Running the Application
 
 ### Start Backend Server
 ```bash
@@ -171,7 +162,7 @@ npm run dev
 ```
 Frontend runs on `http://localhost:5173`
 
-## 📧 Email Configuration
+##  Email Configuration
 
 To enable email notifications:
 
@@ -182,13 +173,13 @@ To enable email notifications:
    - Generate a password for "Mail"
    - Use this password in your `.env` file as `EMAIL_PASS`
 
-## ☁️ Cloudinary Setup
+##  Cloudinary Setup
 
 1. Create a free account at [Cloudinary](https://cloudinary.com/)
 2. Get your credentials from the dashboard
 3. Add them to your `.env` file
 
-## 📱 Usage
+##  Usage
 
 1. **Register**: Create an account with your skills
 2. **Discover**: Browse users and their offered skills
@@ -197,7 +188,7 @@ To enable email notifications:
 5. **Session**: Schedule Google Meet sessions
 6. **Learn**: Exchange knowledge and mark as completed
 
-## 🎯 API Endpoints
+##  API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - Register new user
@@ -236,34 +227,26 @@ To enable email notifications:
 ### Upload
 - `POST /api/upload` - Upload file to Cloudinary
 
-## 🎨 Design Features
 
-- **Glassmorphism**: Modern frosted glass effect
-- **Gradients**: Beautiful color transitions
-- **Animations**: Smooth Framer Motion effects
-- **Responsive**: Mobile-first design
-- **Dark Theme**: Eye-friendly interface
-
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+##  License
 
-This project is licensed under the MIT License.
+This project is for educational purpose only
 
-## 👨‍💻 Author
 
-Built with ❤️ for the skill-sharing community
+## 👤 Author
 
-## 🙏 Acknowledgments
+**Shreyas J U**  
+_Built with ❤️ for the skill-sharing community._
 
-- React Team
-- MongoDB Team
-- Socket.IO Team
-- Tailwind CSS Team
-- Framer Motion Team
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Shreyas-J-U)
+[![Portfolio](https://img.shields.io/badge/Portfolio-2563eb?style=for-the-badge&logo=react&logoColor=white)](https://shreyas-portfolio-ten.vercel.app/)
+
+
 
 ---
 
-**Happy Skill Sharing! 🎓✨**
+**Happy Skill Sharing! **
